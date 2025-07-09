@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { Edit, CheckCircle, Undo, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
+import { EditProductModal } from "./edit-product-modal";
 import type { Product } from "@shared/schema";
 
 interface ProductsTableProps {
@@ -13,6 +15,8 @@ interface ProductsTableProps {
 }
 
 export function ProductsTable({ products }: ProductsTableProps) {
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { toast } = useToast();
 
   const updateProductMutation = useMutation({
@@ -64,8 +68,18 @@ export function ProductsTable({ products }: ProductsTableProps) {
     });
   };
 
+  const openEditModal = (product: Product) => {
+    setEditingProduct(product);
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditingProduct(null);
+    setIsEditModalOpen(false);
+  };
+
   const deleteProduct = (id: number) => {
-    if (confirm("Are you sure you want to delete this product?")) {
+    if (confirm("Czy na pewno chcesz usunąć ten produkt?")) {
       deleteProductMutation.mutate(id);
     }
   };
@@ -77,7 +91,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Product Management</CardTitle>
+        <CardTitle>Zarządzanie produktami</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -85,16 +99,19 @@ export function ProductsTable({ products }: ProductsTableProps) {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Product
+                  Produkt
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Price
+                  Cena
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Telefon
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  Akcje
                 </th>
               </tr>
             </thead>
@@ -120,8 +137,11 @@ export function ProductsTable({ products }: ProductsTableProps) {
                     <div className="text-sm text-gray-900">{formatPrice(product.price)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{product.contactPhone || "Brak"}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <Badge variant={product.isSold ? "secondary" : "default"}>
-                      {product.isSold ? "Sold" : "Available"}
+                      {product.isSold ? "Sprzedane" : "Dostępne"}
                     </Badge>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -130,13 +150,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
                         variant="ghost"
                         size="sm"
                         className="text-primary hover:text-blue-900"
-                        onClick={() => {
-                          // TODO: Implement edit functionality
-                          toast({
-                            title: "Coming Soon",
-                            description: "Edit functionality will be implemented soon",
-                          });
-                        }}
+                        onClick={() => openEditModal(product)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -166,6 +180,12 @@ export function ProductsTable({ products }: ProductsTableProps) {
           </table>
         </div>
       </CardContent>
+      
+      <EditProductModal
+        product={editingProduct}
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+      />
     </Card>
   );
 }

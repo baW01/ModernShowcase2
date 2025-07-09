@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -7,12 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { insertProductSchema } from "@shared/schema";
-import type { InsertProduct } from "@shared/schema";
+import type { Product, InsertProduct } from "@shared/schema";
 import { z } from "zod";
 import { ImageUploadDropzone } from "./image-upload-dropzone";
 
@@ -22,7 +22,13 @@ const formSchema = insertProductSchema.extend({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function ProductForm() {
+interface EditProductModalProps {
+  product: Product | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function EditProductModal({ product, isOpen, onClose }: EditProductModalProps) {
   const [imageUrl, setImageUrl] = useState("");
   const { toast } = useToast();
 
@@ -39,36 +45,51 @@ export function ProductForm() {
     },
   });
 
-  const createProductMutation = useMutation({
-    mutationFn: async (data: InsertProduct) => {
-      const response = await apiRequest("POST", "/api/products", data);
+  useEffect(() => {
+    if (product) {
+      form.reset({
+        title: product.title,
+        description: product.description,
+        price: product.price / 100, // Convert from cents
+        category: product.category,
+        imageUrl: product.imageUrl || "",
+        contactPhone: product.contactPhone || "",
+        isSold: product.isSold,
+      });
+      setImageUrl(product.imageUrl || "");
+    }
+  }, [product, form]);
+
+  const updateProductMutation = useMutation({
+    mutationFn: async (data: Partial<InsertProduct>) => {
+      if (!product) throw new Error("No product to update");
+      const response = await apiRequest("PUT", `/api/products/${product.id}`, data);
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Product created successfully",
+        title: "Sukces",
+        description: "Produkt został zaktualizowany",
       });
-      form.reset();
-      setImageUrl("");
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      onClose();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create product",
+        title: "Błąd",
+        description: error.message || "Nie udało się zaktualizować produktu",
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: FormData) => {
-    const productData: InsertProduct = {
+    const productData: Partial<InsertProduct> = {
       ...data,
       price: Math.round(data.price * 100), // Convert to cents
       imageUrl: imageUrl || null,
     };
-    createProductMutation.mutate(productData);
+    updateProductMutation.mutate(productData);
   };
 
   const handleImageUpload = (url: string) => {
@@ -76,12 +97,15 @@ export function ProductForm() {
     form.setValue("imageUrl", url);
   };
 
+  if (!product) return null;
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add New Product</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edytuj Produkt</DialogTitle>
+        </DialogHeader>
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -90,9 +114,9 @@ export function ProductForm() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Title</FormLabel>
+                    <FormLabel>Nazwa produktu</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter product title" {...field} />
+                      <Input placeholder="Wprowadź nazwę produktu" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -104,7 +128,7 @@ export function ProductForm() {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price</FormLabel>
+                    <FormLabel>Cena</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
@@ -172,11 +196,11 @@ export function ProductForm() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Opis</FormLabel>
                   <FormControl>
                     <Textarea
                       rows={4}
-                      placeholder="Enter product description"
+                      placeholder="Wprowadź opis produktu"
                       {...field}
                     />
                   </FormControl>
@@ -197,23 +221,20 @@ export function ProductForm() {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => {
-                  form.reset();
-                  setImageUrl("");
-                }}
+                onClick={onClose}
               >
-                Cancel
+                Anuluj
               </Button>
               <Button 
                 type="submit" 
-                disabled={createProductMutation.isPending}
+                disabled={updateProductMutation.isPending}
               >
-                {createProductMutation.isPending ? "Adding..." : "Add Product"}
+                {updateProductMutation.isPending ? "Zapisywanie..." : "Zapisz zmiany"}
               </Button>
             </div>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }

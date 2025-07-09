@@ -37,19 +37,12 @@ export class MemStorage implements IStorage {
   private seedInitialProducts() {
     const initialProducts: Omit<Product, 'id'>[] = [
       {
-        title: "iPhone 14 Pro Max",
-        description: "Latest model with advanced camera system and A16 Bionic chip",
-        price: 99900, // $999.00 in cents
-        category: "Electronics",
-        imageUrl: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=800",
-        isSold: false
-      },
-      {
         title: "Luxury Watch",
         description: "Swiss-made timepiece with automatic movement and sapphire crystal",
         price: 249900, // $2499.00 in cents
         category: "Accessories",
         imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=800",
+        contactPhone: "+48 123 456 789",
         isSold: false
       },
       {
@@ -58,6 +51,7 @@ export class MemStorage implements IStorage {
         price: 34900, // $349.00 in cents
         category: "Electronics",
         imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=800",
+        contactPhone: "+48 987 654 321",
         isSold: false
       },
       {
@@ -66,6 +60,7 @@ export class MemStorage implements IStorage {
         price: 69900, // $699.00 in cents
         category: "Electronics",
         imageUrl: "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=800",
+        contactPhone: "+48 555 123 456",
         isSold: false
       },
       {
@@ -74,6 +69,7 @@ export class MemStorage implements IStorage {
         price: 129900, // $1299.00 in cents
         category: "Electronics",
         imageUrl: "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=800",
+        contactPhone: "+48 777 888 999",
         isSold: true
       },
       {
@@ -82,6 +78,7 @@ export class MemStorage implements IStorage {
         price: 19900, // $199.00 in cents
         category: "Accessories",
         imageUrl: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=800",
+        contactPhone: "+48 111 222 333",
         isSold: true
       }
     ];
@@ -106,6 +103,7 @@ export class MemStorage implements IStorage {
       ...insertProduct, 
       id,
       imageUrl: insertProduct.imageUrl || null,
+      contactPhone: insertProduct.contactPhone || null,
       isSold: insertProduct.isSold || false
     };
     this.products.set(id, product);

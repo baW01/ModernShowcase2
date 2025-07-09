@@ -14,8 +14,9 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
   };
 
   const handleContact = () => {
-    if (contactPhone) {
-      window.open(`tel:${contactPhone}`, '_self');
+    const phoneNumber = product.contactPhone || contactPhone;
+    if (phoneNumber) {
+      window.open(`tel:${phoneNumber}`, '_self');
     }
   };
 

@@ -9,6 +9,7 @@ export const products = pgTable("products", {
   price: integer("price").notNull(), // Store price in cents
   category: text("category").notNull(),
   imageUrl: text("image_url"),
+  contactPhone: text("contact_phone"), // Individual contact phone for each product
   isSold: boolean("is_sold").notNull().default(false),
 });
 
