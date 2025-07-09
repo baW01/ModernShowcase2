@@ -27,14 +27,14 @@ export function ProductsTable({ products }: ProductsTableProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
-        title: "Success",
-        description: "Product updated successfully",
+        title: "Sukces",
+        description: "Produkt został zaktualizowany pomyślnie",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update product",
+        title: "Błąd",
+        description: error.message || "Nie udało się zaktualizować produktu",
         variant: "destructive",
       });
     },
@@ -48,14 +48,14 @@ export function ProductsTable({ products }: ProductsTableProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
-        title: "Success",
-        description: "Product deleted successfully",
+        title: "Sukces",
+        description: "Produkt został usunięty pomyślnie",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete product",
+        title: "Błąd",
+        description: error.message || "Nie udało się usunąć produktu",
         variant: "destructive",
       });
     },
@@ -85,7 +85,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
   };
 
   const formatPrice = (priceInCents: number) => {
-    return `$${(priceInCents / 100).toFixed(2)}`;
+    return `${(priceInCents / 100).toFixed(2)} zł`;
   };
 
   return (

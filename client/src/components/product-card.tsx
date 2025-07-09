@@ -10,7 +10,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, contactPhone }: ProductCardProps) {
   const formatPrice = (priceInCents: number) => {
-    return `$${(priceInCents / 100).toFixed(2)}`;
+    return `${(priceInCents / 100).toFixed(2)} zł`;
   };
 
   const handleContact = () => {
@@ -36,7 +36,7 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
             variant={product.isSold ? "secondary" : "default"}
             className={product.isSold ? "bg-sold text-white" : "bg-secondary text-white"}
           >
-            {product.isSold ? "Sold" : "Available"}
+            {product.isSold ? "Sprzedane" : "Dostępne"}
           </Badge>
         </div>
       </div>
@@ -58,7 +58,7 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
               size="sm"
             >
               <Check className="mr-2 h-4 w-4" />
-              Sold
+              Sprzedane
             </Button>
           ) : (
             <Button 
@@ -67,7 +67,7 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
               size="sm"
             >
               <Phone className="mr-2 h-4 w-4" />
-              Contact
+              Kontakt
             </Button>
           )}
         </div>

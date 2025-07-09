@@ -8,9 +8,9 @@ interface AdminNavProps {
 
 export function AdminNav({ activeTab, onTabChange }: AdminNavProps) {
   const tabs = [
-    { id: "products", label: "Products", icon: Box },
-    { id: "add-product", label: "Add Product", icon: Plus },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "products", label: "Produkty", icon: Box },
+    { id: "add-product", label: "Dodaj produkt", icon: Plus },
+    { id: "settings", label: "Ustawienia", icon: Settings },
   ];
 
   return (

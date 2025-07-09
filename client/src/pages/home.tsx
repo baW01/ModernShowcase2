@@ -66,12 +66,12 @@ export default function Home() {
             <div className="flex items-center space-x-4">
               <Button variant="default" size="sm" className="bg-primary/10 text-primary hover:bg-primary/20">
                 <Eye className="mr-2 h-4 w-4" />
-                Public View
+                Widok publiczny
               </Button>
               <Link href="/admin">
                 <Button variant="outline" size="sm">
                   <SettingsIcon className="mr-2 h-4 w-4" />
-                  Admin Panel
+                  Panel Admin
                 </Button>
               </Link>
             </div>
@@ -82,9 +82,9 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary to-blue-600 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-4">Discover Amazing Products</h2>
+          <h2 className="text-4xl font-bold mb-4">Odkryj niesamowite produkty</h2>
           <p className="text-xl text-blue-100 mb-8">
-            {settings?.storeDescription || "Browse our curated collection and connect with sellers directly"}
+            {settings?.storeDescription || "Przeglądaj naszą wyselekcjonowaną kolekcję i skontaktuj się bezpośrednio ze sprzedawcami"}
           </p>
           <div className="flex justify-center items-center space-x-4">
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
@@ -104,7 +104,7 @@ export default function Home() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder="Szukaj produktów..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -114,10 +114,10 @@ export default function Home() {
             <div className="flex items-center space-x-4">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="All Categories" />
+                  <SelectValue placeholder="Wszystkie kategorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="all">Wszystkie kategorie</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -125,12 +125,12 @@ export default function Home() {
               </Select>
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                 <SelectTrigger className="w-36">
-                  <SelectValue placeholder="All Status" />
+                  <SelectValue placeholder="Wszystkie statusy" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="sold">Sold</SelectItem>
+                  <SelectItem value="all">Wszystkie statusy</SelectItem>
+                  <SelectItem value="available">Dostępne</SelectItem>
+                  <SelectItem value="sold">Sprzedane</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -144,13 +144,13 @@ export default function Home() {
           {/* Available Products */}
           <div className="mb-12">
             <div className="mb-8">
-              <h3 className="text-2xl font-bold text-text mb-2">Available Products</h3>
-              <p className="text-gray-600">Contact sellers directly for inquiries</p>
+              <h3 className="text-2xl font-bold text-text mb-2">Dostępne produkty</h3>
+              <p className="text-gray-600">Skontaktuj się bezpośrednio ze sprzedawcami w sprawie zapytań</p>
             </div>
 
             {availableProducts.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500">No available products found.</p>
+                <p className="text-gray-500">Nie znaleziono dostępnych produktów.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -165,8 +165,8 @@ export default function Home() {
           {soldProducts.length > 0 && (
             <div className="border-t border-gray-200 pt-12">
               <div className="mb-8">
-                <h3 className="text-2xl font-bold text-text mb-2">Sold Items</h3>
-                <p className="text-gray-600">Recently sold products</p>
+                <h3 className="text-2xl font-bold text-text mb-2">Sprzedane przedmioty</h3>
+                <p className="text-gray-600">Niedawno sprzedane produkty</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

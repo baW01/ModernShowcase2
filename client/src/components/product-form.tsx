@@ -46,8 +46,8 @@ export function ProductForm() {
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Product created successfully",
+        title: "Sukces",
+        description: "Produkt został utworzony pomyślnie",
       });
       form.reset();
       setImageUrl("");
@@ -55,8 +55,8 @@ export function ProductForm() {
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create product",
+        title: "Błąd",
+        description: error.message || "Nie udało się utworzyć produktu",
         variant: "destructive",
       });
     },
@@ -79,7 +79,7 @@ export function ProductForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Add New Product</CardTitle>
+        <CardTitle>Dodaj nowy produkt</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -90,9 +90,9 @@ export function ProductForm() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Title</FormLabel>
+                    <FormLabel>Nazwa produktu</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter product title" {...field} />
+                      <Input placeholder="Wprowadź nazwę produktu" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -104,10 +104,10 @@ export function ProductForm() {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price</FormLabel>
+                    <FormLabel>Cena</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">zł</span>
                         <Input
                           type="number"
                           step="0.01"
@@ -172,11 +172,11 @@ export function ProductForm() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Opis</FormLabel>
                   <FormControl>
                     <Textarea
                       rows={4}
-                      placeholder="Enter product description"
+                      placeholder="Wprowadź opis produktu"
                       {...field}
                     />
                   </FormControl>
@@ -202,13 +202,13 @@ export function ProductForm() {
                   setImageUrl("");
                 }}
               >
-                Cancel
+                Anuluj
               </Button>
               <Button 
                 type="submit" 
                 disabled={createProductMutation.isPending}
               >
-                {createProductMutation.isPending ? "Adding..." : "Add Product"}
+                {createProductMutation.isPending ? "Dodawanie..." : "Dodaj produkt"}
               </Button>
             </div>
           </form>

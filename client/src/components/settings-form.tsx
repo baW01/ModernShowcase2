@@ -22,9 +22,9 @@ export function SettingsForm({ settings }: SettingsFormProps) {
   const form = useForm<InsertSettings>({
     resolver: zodResolver(insertSettingsSchema),
     defaultValues: {
-      contactPhone: settings?.contactPhone || "+1 (555) 123-4567",
+      contactPhone: settings?.contactPhone || "+48 123 456 789",
       storeName: settings?.storeName || "ProductHub",
-      storeDescription: settings?.storeDescription || "Browse our curated collection and connect with sellers directly",
+      storeDescription: settings?.storeDescription || "Przeglądaj naszą wyselekcjonowaną kolekcję i skontaktuj się bezpośrednio ze sprzedawcami",
     },
   });
 
@@ -35,15 +35,15 @@ export function SettingsForm({ settings }: SettingsFormProps) {
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Settings updated successfully",
+        title: "Sukces",
+        description: "Ustawienia zostały zaktualizowane pomyślnie",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update settings",
+        title: "Błąd",
+        description: error.message || "Nie udało się zaktualizować ustawień",
         variant: "destructive",
       });
     },
@@ -56,7 +56,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Settings</CardTitle>
+        <CardTitle>Ustawienia sklepu</CardTitle>
+        <p className="text-sm text-gray-600">Skonfiguruj informacje o sklepie i dane kontaktowe</p>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -66,9 +67,9 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               name="contactPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact Phone Number</FormLabel>
+                  <FormLabel>Główny numer telefonu sklepu</FormLabel>
                   <FormControl>
-                    <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
+                    <Input type="tel" placeholder="+48 123 456 789" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -80,7 +81,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               name="storeName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Store Name</FormLabel>
+                  <FormLabel>Nazwa sklepu</FormLabel>
                   <FormControl>
                     <Input placeholder="ProductHub" {...field} />
                   </FormControl>
@@ -94,11 +95,11 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               name="storeDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Store Description</FormLabel>
+                  <FormLabel>Opis sklepu</FormLabel>
                   <FormControl>
                     <Textarea
                       rows={3}
-                      placeholder="Browse our curated collection and connect with sellers directly"
+                      placeholder="Przeglądaj naszą wyselekcjonowaną kolekcję i skontaktuj się bezpośrednio ze sprzedawcami"
                       {...field}
                     />
                   </FormControl>
@@ -112,7 +113,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                 type="submit" 
                 disabled={updateSettingsMutation.isPending}
               >
-                {updateSettingsMutation.isPending ? "Saving..." : "Save Settings"}
+                {updateSettingsMutation.isPending ? "Zapisywanie..." : "Zapisz ustawienia"}
               </Button>
             </div>
           </form>
