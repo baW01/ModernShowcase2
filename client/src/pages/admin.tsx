@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { AdminNav } from "@/components/admin-nav";
 import { ProductForm } from "@/components/product-form";
 import { ProductsTable } from "@/components/products-table";
+import { ProductRequestsTable } from "@/components/product-requests-table";
 import { SettingsForm } from "@/components/settings-form";
 import { AdminLogin } from "@/components/admin-login";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
-import type { Product, Settings as SettingsType } from "@shared/schema";
+import type { Product, Settings as SettingsType, ProductRequest } from "@shared/schema";
 import { useState } from "react";
 
 export default function Admin() {
@@ -22,6 +23,11 @@ export default function Admin() {
 
   const { data: settings } = useQuery<SettingsType>({
     queryKey: ["/api/settings"],
+    enabled: isAuthenticated, // Only fetch when authenticated
+  });
+
+  const { data: productRequests = [], isLoading: requestsLoading } = useQuery<ProductRequest[]>({
+    queryKey: ["/api/product-requests"],
     enabled: isAuthenticated, // Only fetch when authenticated
   });
 
@@ -100,6 +106,25 @@ export default function Admin() {
         <div className="mt-8">
           {activeTab === "products" && <ProductsTable products={products} />}
           {activeTab === "add-product" && <ProductForm />}
+          {activeTab === "requests" && (
+            <div>
+              <h3 className="text-xl font-semibold mb-4">
+                Prośby o dodanie produktów 
+                {productRequests.length > 0 && (
+                  <span className="ml-2 text-lg font-normal text-muted-foreground">
+                    ({productRequests.length})
+                  </span>
+                )}
+              </h3>
+              {requestsLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <ProductRequestsTable requests={productRequests} />
+              )}
+            </div>
+          )}
           {activeTab === "settings" && <SettingsForm settings={settings} />}
         </div>
       </div>

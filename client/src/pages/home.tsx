@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProductCard } from "@/components/product-card";
+import { ProductRequestForm } from "@/components/product-request-form";
 import type { Product, Settings } from "@shared/schema";
 import { useState } from "react";
 
@@ -91,6 +92,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <ProductRequestForm />
               <Button variant="default" size="sm" className="bg-primary/10 text-primary hover:bg-primary/20">
                 <Eye className="mr-2 h-4 w-4" />
                 Widok publiczny

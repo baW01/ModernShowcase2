@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Box, Plus, Settings } from "lucide-react";
+import { Box, Plus, Settings, Package } from "lucide-react";
 
 interface AdminNavProps {
   activeTab: string;
@@ -10,6 +10,7 @@ export function AdminNav({ activeTab, onTabChange }: AdminNavProps) {
   const tabs = [
     { id: "products", label: "Produkty", icon: Box },
     { id: "add-product", label: "Dodaj produkt", icon: Plus },
+    { id: "requests", label: "Prośby o produkty", icon: Package },
     { id: "settings", label: "Ustawienia", icon: Settings },
   ];
 

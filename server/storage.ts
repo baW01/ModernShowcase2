@@ -1,4 +1,4 @@
-import { products, settings, type Product, type InsertProduct, type Settings, type InsertSettings } from "@shared/schema";
+import { products, settings, productRequests, type Product, type InsertProduct, type Settings, type InsertSettings, type ProductRequest, type InsertProductRequest } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -13,6 +13,13 @@ export interface IStorage {
   // Settings
   getSettings(): Promise<Settings | undefined>;
   updateSettings(settings: InsertSettings): Promise<Settings>;
+  
+  // Product Requests
+  getProductRequests(): Promise<ProductRequest[]>;
+  getProductRequest(id: number): Promise<ProductRequest | undefined>;
+  createProductRequest(request: InsertProductRequest): Promise<ProductRequest>;
+  updateProductRequestStatus(id: number, status: "approved" | "rejected", adminNotes?: string): Promise<ProductRequest | undefined>;
+  deleteProductRequest(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -104,6 +111,70 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error updating settings:', error);
       throw new Error('Failed to update settings in database');
+    }
+  }
+
+  async getProductRequests(): Promise<ProductRequest[]> {
+    try {
+      const requests = await db.select().from(productRequests).orderBy(productRequests.submittedAt);
+      return requests;
+    } catch (error) {
+      console.error('Error fetching product requests:', error);
+      throw new Error('Failed to fetch product requests from database');
+    }
+  }
+
+  async getProductRequest(id: number): Promise<ProductRequest | undefined> {
+    try {
+      const [request] = await db.select().from(productRequests).where(eq(productRequests.id, id));
+      return request || undefined;
+    } catch (error) {
+      console.error('Error fetching product request:', error);
+      throw new Error('Failed to fetch product request from database');
+    }
+  }
+
+  async createProductRequest(insertRequest: InsertProductRequest): Promise<ProductRequest> {
+    try {
+      const [request] = await db
+        .insert(productRequests)
+        .values({
+          ...insertRequest,
+          submittedAt: new Date().toISOString(),
+        })
+        .returning();
+      return request;
+    } catch (error) {
+      console.error('Error creating product request:', error);
+      throw new Error('Failed to create product request in database');
+    }
+  }
+
+  async updateProductRequestStatus(id: number, status: "approved" | "rejected", adminNotes?: string): Promise<ProductRequest | undefined> {
+    try {
+      const [updatedRequest] = await db
+        .update(productRequests)
+        .set({
+          status,
+          reviewedAt: new Date().toISOString(),
+          adminNotes,
+        })
+        .where(eq(productRequests.id, id))
+        .returning();
+      return updatedRequest || undefined;
+    } catch (error) {
+      console.error('Error updating product request status:', error);
+      throw new Error('Failed to update product request status in database');
+    }
+  }
+
+  async deleteProductRequest(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(productRequests).where(eq(productRequests.id, id));
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting product request:', error);
+      throw new Error('Failed to delete product request from database');
     }
   }
 }
