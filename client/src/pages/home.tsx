@@ -13,13 +13,21 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
-  const { data: settings } = useQuery<Settings>({
+  const { data: settings, error: settingsError } = useQuery<Settings>({
     queryKey: ["/api/settings"],
   });
+
+  // Debug: Log any errors
+  if (productsError) {
+    console.error('Products error:', productsError);
+  }
+  if (settingsError) {
+    console.error('Settings error:', settingsError);
+  }
 
   // Filter products based on search and filters
   const filteredProducts = products.filter(product => {
@@ -43,7 +51,26 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Ładowanie produktów...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle errors
+  if (productsError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-destructive mb-4">Błąd ładowania produktów</p>
+            <Button onClick={() => window.location.reload()}>
+              Odśwież stronę
+            </Button>
+          </div>
         </div>
       </div>
     );
