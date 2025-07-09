@@ -60,7 +60,7 @@ export default function Admin() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center py-4 sm:py-0 sm:h-16 gap-4 sm:gap-0">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <h1 className="text-xl font-bold text-primary flex items-center">
@@ -69,22 +69,24 @@ export default function Admin() {
                 </h1>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/">
-                <Button variant="outline" size="sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+              <Link href="/" className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full">
                   <Eye className="mr-2 h-4 w-4" />
-                  Widok publiczny
+                  <span className="hidden sm:inline">Widok publiczny</span>
+                  <span className="sm:hidden">Publiczny</span>
                 </Button>
               </Link>
-              <Button variant="default" size="sm" className="bg-primary/10 text-primary hover:bg-primary/20">
+              <Button variant="default" size="sm" className="bg-primary/10 text-primary hover:bg-primary/20 w-full sm:w-auto">
                 <Settings className="mr-2 h-4 w-4" />
-                Panel Admin
+                <span className="hidden sm:inline">Panel Admin</span>
+                <span className="sm:hidden">Admin</span>
               </Button>
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={logout}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Wyloguj

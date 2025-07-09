@@ -93,9 +93,10 @@ export function ProductRequestForm() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-accent hover:bg-accent/90 text-black">
+        <Button className="bg-accent hover:bg-accent/90 text-black w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
-          Poproś o dodanie produktu
+          <span className="hidden sm:inline">Poproś o dodanie produktu</span>
+          <span className="sm:hidden">Dodaj produkt</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
