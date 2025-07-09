@@ -37,9 +37,9 @@ Preferred communication style: Simple, everyday language.
 - **UI Library**: Comprehensive set of reusable UI components from shadcn/ui
 
 ### Backend Components
-- **Storage Layer**: Abstract storage interface with in-memory implementation for development
+- **Storage Layer**: Abstract storage interface with PostgreSQL database implementation
 - **Route Handlers**: RESTful API endpoints for products and settings
-- **Database Schema**: Products and settings tables with proper relationships
+- **Database Schema**: Products and settings tables with proper relationships using Drizzle ORM
 - **Development Server**: Vite integration for hot module replacement in development
 
 ## Data Flow
@@ -47,7 +47,7 @@ Preferred communication style: Simple, everyday language.
 1. **Client Requests**: Frontend makes API calls using TanStack Query
 2. **API Layer**: Express routes handle CRUD operations
 3. **Validation**: Zod schemas validate incoming data
-4. **Storage**: Currently uses in-memory storage, designed for easy database integration
+4. **Storage**: Uses PostgreSQL database with Drizzle ORM for persistent data storage
 5. **Response**: JSON responses sent back to client
 6. **State Management**: TanStack Query manages caching and synchronization
 
