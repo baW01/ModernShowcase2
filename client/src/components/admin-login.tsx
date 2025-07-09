@@ -115,11 +115,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
             </form>
           </Form>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>Demo:</strong> Hasło to "admin123"
-            </p>
-          </div>
+
         </CardContent>
       </Card>
     </div>
