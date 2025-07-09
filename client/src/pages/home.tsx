@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { Search, Store, Settings as SettingsIcon, Eye } from "lucide-react";
+import { Search, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -91,20 +90,8 @@ export default function Home() {
                 </h1>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+            <div className="flex justify-end">
               <ProductRequestForm />
-              <Button variant="default" size="sm" className="bg-primary/10 text-primary hover:bg-primary/20 w-full sm:w-auto">
-                <Eye className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Widok publiczny</span>
-                <span className="sm:hidden">Publiczny</span>
-              </Button>
-              <Link href="/admin" className="w-full sm:w-auto">
-                <Button variant="outline" size="sm" className="w-full">
-                  <SettingsIcon className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Panel Admin</span>
-                  <span className="sm:hidden">Admin</span>
-                </Button>
-              </Link>
             </div>
           </div>
         </div>

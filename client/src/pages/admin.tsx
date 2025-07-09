@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { Store, Eye, Settings, LogOut } from "lucide-react";
+import { Store, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminNav } from "@/components/admin-nav";
 import { ProductForm } from "@/components/product-form";
@@ -69,24 +68,12 @@ export default function Admin() {
                 </h1>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-              <Link href="/" className="w-full sm:w-auto">
-                <Button variant="outline" size="sm" className="w-full">
-                  <Eye className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Widok publiczny</span>
-                  <span className="sm:hidden">Publiczny</span>
-                </Button>
-              </Link>
-              <Button variant="default" size="sm" className="bg-primary/10 text-primary hover:bg-primary/20 w-full sm:w-auto">
-                <Settings className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Panel Admin</span>
-                <span className="sm:hidden">Admin</span>
-              </Button>
+            <div className="flex justify-end">
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={logout}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Wyloguj
