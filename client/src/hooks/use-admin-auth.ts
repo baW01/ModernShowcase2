@@ -42,7 +42,7 @@ export function useAdminAuth() {
 
   const login = (password: string) => {
     // In a real app, you'd verify this with a backend
-    if (password === "admin123") {
+    if (password === "Kopia15341534!") {
       const session: AdminSession = {
         authenticated: true,
         timestamp: Date.now(),

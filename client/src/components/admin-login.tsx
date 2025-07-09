@@ -34,8 +34,8 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
   const onSubmit = async (data: LoginData) => {
     setIsLoading(true);
     try {
-      // Sprawdź hasło (w tym przypadku: "admin123")
-      if (data.password === "admin123") {
+      // Sprawdź hasło (w tym przypadku: "Kopia15341534!")
+      if (data.password === "Kopia15341534!") {
         onLogin(data.password);
         toast({
           title: "Sukces",
