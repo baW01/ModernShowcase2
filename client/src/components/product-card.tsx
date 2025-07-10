@@ -8,10 +8,9 @@ import { ContactModal } from "./contact-modal";
 
 interface ProductCardProps {
   product: Product;
-  contactPhone?: string;
 }
 
-export function ProductCard({ product, contactPhone }: ProductCardProps) {
+export function ProductCard({ product }: ProductCardProps) {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   
   // Track view when component mounts
@@ -104,7 +103,7 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
       <ContactModal
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}
-        phoneNumber={contactPhone || product.contactPhone}
+        phoneNumber={product.contactPhone}
         productTitle={product.title}
       />
     </div>

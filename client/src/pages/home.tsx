@@ -101,18 +101,17 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-blue-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-4">Odkryj niesamowite produkty</h2>
-          <p className="text-xl text-blue-100 mb-8">
+      <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-16 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20"></div>
+        <div className="absolute top-10 left-10 w-20 h-20 bg-blue-300/30 rounded-full blur-xl"></div>
+        <div className="absolute bottom-10 right-10 w-32 h-32 bg-purple-300/30 rounded-full blur-xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-indigo-300/20 rounded-full blur-2xl"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold mb-4 text-gray-900">Odkryj niesamowite produkty</h2>
+          <p className="text-xl text-gray-700 mb-8">
             {settings?.storeDescription || "Przeglądaj naszą wyselekcjonowaną kolekcję i skontaktuj się bezpośrednio ze sprzedawcami"}
           </p>
-          <div className="flex justify-center items-center space-x-4">
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-              <span className="text-accent">📞</span>
-              <span className="ml-2">{settings?.contactPhone || "+1 (555) 123-4567"}</span>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -194,7 +193,7 @@ export default function Home() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {availableProducts.map(product => (
-                  <ProductCard key={product.id} product={product} contactPhone={settings?.contactPhone} />
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
             )}
@@ -210,7 +209,7 @@ export default function Home() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {soldProducts.map(product => (
-                  <ProductCard key={product.id} product={product} contactPhone={settings?.contactPhone} />
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
             </div>
