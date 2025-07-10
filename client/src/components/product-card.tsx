@@ -3,7 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Phone, Check, Eye, MousePointer2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ContactModal } from "./contact-modal";
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +12,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, contactPhone }: ProductCardProps) {
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  
   // Track view when component mounts
   useEffect(() => {
     apiRequest(`/api/products/${product.id}/views`, { method: 'POST' }).catch(() => {});
@@ -27,6 +30,9 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
     } catch (error) {
       // Ignore errors, don't block contact action
     }
+    
+    // Open contact modal
+    setIsContactModalOpen(true);
   };
 
   return (
@@ -87,16 +93,20 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
               onClick={handleContact}
               className="bg-accent hover:bg-orange-600 text-white"
               size="sm"
-              asChild
             >
-              <a href={`tel:${contactPhone || product.contactPhone}`}>
-                <Phone className="mr-2 h-4 w-4" />
-                Zadzwoń
-              </a>
+              <Phone className="mr-2 h-4 w-4" />
+              Kontakt
             </Button>
           )}
         </div>
       </div>
+      
+      <ContactModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        phoneNumber={contactPhone || product.contactPhone}
+        productTitle={product.title}
+      />
     </div>
   );
 }
