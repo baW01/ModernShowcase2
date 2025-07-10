@@ -125,7 +125,7 @@ export function CategoriesManagement() {
         <h3 className="text-xl font-semibold">Zarządzanie kategoriami</h3>
         <Dialog open={isAddOpen || !!editingCategory} onOpenChange={closeDialog}>
           <DialogTrigger asChild>
-            <Button onClick={() => setIsAddOpen(true)}>
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               Dodaj kategorię
             </Button>

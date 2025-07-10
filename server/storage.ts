@@ -118,6 +118,11 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProduct(id: number): Promise<boolean> {
     try {
+      // First delete related records to avoid foreign key violations
+      await db.delete(productClicks).where(eq(productClicks.productId, id));
+      await db.delete(productViews).where(eq(productViews.productId, id));
+      
+      // Then delete the product
       const result = await db.delete(products).where(eq(products.id, id));
       return result.rowCount !== null && result.rowCount > 0;
     } catch (error) {
