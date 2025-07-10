@@ -227,6 +227,23 @@ export class DatabaseStorage implements IStorage {
   // Product Statistics
   async incrementProductViews(productId: number, ipAddress?: string, userAgent?: string): Promise<void> {
     try {
+      // Check if this IP already viewed this product
+      if (ipAddress) {
+        const existingView = await db
+          .select()
+          .from(productViews)
+          .where(and(
+            eq(productViews.productId, productId),
+            eq(productViews.ipAddress, ipAddress)
+          ))
+          .limit(1);
+        
+        if (existingView.length > 0) {
+          // IP already viewed this product, don't count again
+          return;
+        }
+      }
+
       // Log the view
       await db.insert(productViews).values({
         productId,
@@ -247,6 +264,23 @@ export class DatabaseStorage implements IStorage {
 
   async incrementProductClicks(productId: number, ipAddress?: string, userAgent?: string): Promise<void> {
     try {
+      // Check if this IP already clicked on this product
+      if (ipAddress) {
+        const existingClick = await db
+          .select()
+          .from(productClicks)
+          .where(and(
+            eq(productClicks.productId, productId),
+            eq(productClicks.ipAddress, ipAddress)
+          ))
+          .limit(1);
+        
+        if (existingClick.length > 0) {
+          // IP already clicked on this product, don't count again
+          return;
+        }
+      }
+
       // Log the click
       await db.insert(productClicks).values({
         productId,
