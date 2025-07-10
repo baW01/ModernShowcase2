@@ -16,10 +16,12 @@ export default function Privacy() {
           <h2>2. Rodzaje zbieranych danych</h2>
           <p>Zbieramy następujące dane:</p>
           <ul>
-            <li>Dane podane podczas dodawania produktów (nazwa, opis, cena)</li>
+            <li>Dane podane podczas dodawania produktów (nazwa, opis, cena, kategoria)</li>
             <li>Dane kontaktowe (numer telefonu, adres email)</li>
-            <li>Dane techniczne (adres IP, informacje o przeglądarce)</li>
-            <li>Statystyki korzystania z platformy</li>
+            <li>Dane techniczne (adres IP, informacje o przeglądarce, user agent)</li>
+            <li>Statystyki korzystania z platformy (wyświetlenia i kliknięcia produktów)</li>
+            <li>Dane o interakcjach z produktami (historia przeglądania)</li>
+            <li>Preferencje dotyczące plików cookie</li>
           </ul>
 
           <h2>3. Cel przetwarzania danych</h2>
@@ -27,8 +29,11 @@ export default function Privacy() {
           <ul>
             <li>Umożliwienia korzystania z platformy</li>
             <li>Ułatwienia kontaktu między użytkownikami</li>
-            <li>Prowadzenia statystyk i analiz</li>
+            <li>Prowadzenia statystyk i analiz popularności produktów</li>
             <li>Zapewnienia bezpieczeństwa platformy</li>
+            <li>Kategoryzacji i organizacji produktów</li>
+            <li>Zapobiegania nadużyciom i spam-owi</li>
+            <li>Optymalizacji działania platformy</li>
           </ul>
 
           <h2>4. Podstawa prawna</h2>
@@ -75,11 +80,20 @@ export default function Privacy() {
             utratą, zniszczeniem lub uszkodzeniem.
           </p>
 
-          <h2>9. Pliki cookies</h2>
+          <h2>9. Pliki cookies i śledzenie</h2>
           <p>
-            Platforma wykorzystuje pliki cookies w celu zapewnienia prawidłowego 
-            funkcjonowania oraz analizy ruchu. Użytkownik może zarządzać cookies 
-            poprzez ustawienia przeglądarki.
+            Platforma wykorzystuje pliki cookies oraz systemy śledzenia w celu:
+          </p>
+          <ul>
+            <li>Zapewnienia prawidłowego funkcjonowania platformy</li>
+            <li>Analizy ruchu i popularności produktów</li>
+            <li>Zapobiegania wielokrotnemu liczeniu statystyk od tego samego użytkownika</li>
+            <li>Zapamiętywania preferencji użytkownika dotyczących cookies</li>
+          </ul>
+          <p>
+            Użytkownik może zarządzać cookies poprzez ustawienia przeglądarki lub 
+            banner zgody na cookies. Statystyki wyświetleń i kliknięć są zbierane 
+            anonimowo z uwzględnieniem adresu IP w celu unikania duplikatów.
           </p>
 
           <h2>10. Kontakt</h2>

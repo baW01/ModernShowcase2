@@ -102,6 +102,11 @@ The application is structured as a monorepo with shared types and schemas, makin
 - Integrated footer with donation links to suppi.pl/spottedgfc
 - Implemented unique tracking system for views and clicks (one per IP address per product)
 - Fixed DialogContent accessibility warning by adding proper aria-describedby attribute
+- **Updated Privacy Policy and Terms of Service** to reflect new data collection practices:
+  - Added details about statistical tracking (views/clicks with IP and user agent)
+  - Included category management functionality
+  - Expanded cookie usage description to cover analytics tracking
+  - Added prohibition against artificial statistics manipulation
 
 ## Key Features Added
 
