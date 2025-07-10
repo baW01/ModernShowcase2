@@ -9,6 +9,7 @@ import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
+import DeleteRequest from "@/pages/delete-request";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/regulamin" component={Terms} />
       <Route path="/polityka-prywatnosci" component={Privacy} />
+      <Route path="/delete-request" component={DeleteRequest} />
       <Route component={NotFound} />
     </Switch>
   );

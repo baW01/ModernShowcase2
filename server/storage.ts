@@ -5,6 +5,7 @@ import {
   categories,
   productViews,
   productClicks,
+  deleteRequests,
   type Product, 
   type InsertProduct, 
   type Settings, 
@@ -14,7 +15,9 @@ import {
   type Category,
   type InsertCategory,
   type ProductView,
-  type ProductClick
+  type ProductClick,
+  type DeleteRequest,
+  type InsertDeleteRequest
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, and } from "drizzle-orm";
@@ -49,6 +52,13 @@ export interface IStorage {
   createProductRequest(request: InsertProductRequest): Promise<ProductRequest>;
   updateProductRequestStatus(id: number, status: "approved" | "rejected", adminNotes?: string): Promise<ProductRequest | undefined>;
   deleteProductRequest(id: number): Promise<boolean>;
+  
+  // Delete Requests
+  getDeleteRequests(): Promise<DeleteRequest[]>;
+  getDeleteRequest(id: number): Promise<DeleteRequest | undefined>;
+  createDeleteRequest(request: InsertDeleteRequest): Promise<DeleteRequest>;
+  updateDeleteRequestStatus(id: number, status: "approved" | "rejected", adminNotes?: string): Promise<DeleteRequest | undefined>;
+  deleteDeleteRequest(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -377,6 +387,68 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error deleting category:', error);
       throw new Error('Failed to delete category from database');
+    }
+  }
+
+  // Delete Requests
+  async getDeleteRequests(): Promise<DeleteRequest[]> {
+    try {
+      const requests = await db.select().from(deleteRequests).orderBy(deleteRequests.submittedAt);
+      return requests;
+    } catch (error) {
+      console.error('Error fetching delete requests:', error);
+      throw new Error('Failed to fetch delete requests from database');
+    }
+  }
+
+  async getDeleteRequest(id: number): Promise<DeleteRequest | undefined> {
+    try {
+      const [request] = await db.select().from(deleteRequests).where(eq(deleteRequests.id, id));
+      return request || undefined;
+    } catch (error) {
+      console.error('Error fetching delete request:', error);
+      throw new Error('Failed to fetch delete request from database');
+    }
+  }
+
+  async createDeleteRequest(insertRequest: InsertDeleteRequest): Promise<DeleteRequest> {
+    try {
+      const [request] = await db
+        .insert(deleteRequests)
+        .values(insertRequest)
+        .returning();
+      return request;
+    } catch (error) {
+      console.error('Error creating delete request:', error);
+      throw new Error('Failed to create delete request in database');
+    }
+  }
+
+  async updateDeleteRequestStatus(id: number, status: "approved" | "rejected", adminNotes?: string): Promise<DeleteRequest | undefined> {
+    try {
+      const [updatedRequest] = await db
+        .update(deleteRequests)
+        .set({
+          status,
+          reviewedAt: new Date(),
+          adminNotes,
+        })
+        .where(eq(deleteRequests.id, id))
+        .returning();
+      return updatedRequest || undefined;
+    } catch (error) {
+      console.error('Error updating delete request status:', error);
+      throw new Error('Failed to update delete request status in database');
+    }
+  }
+
+  async deleteDeleteRequest(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(deleteRequests).where(eq(deleteRequests.id, id));
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting delete request:', error);
+      throw new Error('Failed to delete delete request from database');
     }
   }
 }

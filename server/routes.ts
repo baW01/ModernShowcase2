@@ -174,9 +174,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: request.category,
         imageUrl: request.imageUrl,
         contactPhone: request.contactPhone,
+        submitterEmail: request.submitterEmail, // Store submitter email for delete requests
       };
 
       const product = await storage.createProduct(productData);
+      
+      // Send approval email to submitter
+      if (request.submitterEmail) {
+        const { sendEmail, generateApprovalEmailHtml } = await import('./email');
+        try {
+          await sendEmail({
+            to: request.submitterEmail,
+            from: process.env.FROM_EMAIL || 'noreply@spotted-gfc.com',
+            subject: 'Twój produkt został zatwierdzony! ✅',
+            html: generateApprovalEmailHtml(request.title, product.id)
+          });
+        } catch (emailError) {
+          console.error('Failed to send approval email:', emailError);
+          // Don't fail the product creation if email fails
+        }
+      }
       
       // Delete the request after conversion
       await storage.deleteProductRequest(id);
@@ -200,6 +217,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Product request deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete product request" });
+    }
+  });
+
+  // Delete Requests routes
+  app.get("/api/delete-requests", async (req, res) => {
+    try {
+      const requests = await storage.getDeleteRequests();
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch delete requests" });
+    }
+  });
+
+  app.post("/api/delete-requests", async (req, res) => {
+    try {
+      const { productId, submitterEmail, reason } = req.body;
+      
+      if (!productId || !submitterEmail) {
+        return res.status(400).json({ message: "Product ID and submitter email are required" });
+      }
+
+      // Verify that the product exists and the email matches
+      const product = await storage.getProduct(productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      if (product.submitterEmail !== submitterEmail) {
+        return res.status(403).json({ message: "Email does not match the product submitter" });
+      }
+
+      const deleteRequest = await storage.createDeleteRequest({
+        productId,
+        submitterEmail,
+        reason,
+      });
+
+      // Send confirmation email to submitter
+      const { sendEmail, generateDeleteRequestEmailHtml } = await import('./email');
+      try {
+        await sendEmail({
+          to: submitterEmail,
+          from: process.env.FROM_EMAIL || 'noreply@spotted-gfc.com',
+          subject: 'Prośba o usunięcie produktu otrzymana 📝',
+          html: generateDeleteRequestEmailHtml(product.title, reason)
+        });
+      } catch (emailError) {
+        console.error('Failed to send delete request email:', emailError);
+        // Don't fail the request creation if email fails
+      }
+
+      res.status(201).json(deleteRequest);
+    } catch (error) {
+      console.error('Delete request error:', error);
+      res.status(500).json({ message: "Failed to create delete request" });
+    }
+  });
+
+  app.put("/api/delete-requests/:id/status", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status, adminNotes } = req.body;
+      
+      if (!["approved", "rejected"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status. Must be 'approved' or 'rejected'" });
+      }
+
+      const deleteRequest = await storage.updateDeleteRequestStatus(id, status, adminNotes);
+      
+      if (!deleteRequest) {
+        return res.status(404).json({ message: "Delete request not found" });
+      }
+
+      // If approved, delete the product
+      if (status === "approved") {
+        const success = await storage.deleteProduct(deleteRequest.productId);
+        if (!success) {
+          console.error('Failed to delete product after approving delete request');
+        }
+      }
+      
+      res.json(deleteRequest);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update delete request status" });
+    }
+  });
+
+  app.delete("/api/delete-requests/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteDeleteRequest(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Delete request not found" });
+      }
+      
+      res.json({ message: "Delete request deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete delete request" });
     }
   });
 

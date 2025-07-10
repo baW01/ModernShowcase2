@@ -5,11 +5,12 @@ import { AdminNav } from "@/components/admin-nav";
 import { ProductForm } from "@/components/product-form";
 import { ProductsTable } from "@/components/products-table";
 import { ProductRequestsTable } from "@/components/product-requests-table";
+import { DeleteRequestsTable } from "@/components/delete-requests-table";
 import { SettingsForm } from "@/components/settings-form";
 import { AdminLogin } from "@/components/admin-login";
 import { CategoriesManagement } from "@/components/categories-management";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
-import type { Product, Settings as SettingsType, ProductRequest } from "@shared/schema";
+import type { Product, Settings as SettingsType, ProductRequest, DeleteRequest } from "@shared/schema";
 import { useState } from "react";
 
 export default function Admin() {
@@ -28,6 +29,11 @@ export default function Admin() {
 
   const { data: productRequests = [], isLoading: requestsLoading } = useQuery<ProductRequest[]>({
     queryKey: ["/api/product-requests"],
+    enabled: isAuthenticated, // Only fetch when authenticated
+  });
+
+  const { data: deleteRequests = [], isLoading: deleteRequestsLoading } = useQuery<DeleteRequest[]>({
+    queryKey: ["/api/delete-requests"],
     enabled: isAuthenticated, // Only fetch when authenticated
   });
 
@@ -113,6 +119,25 @@ export default function Admin() {
                 </div>
               ) : (
                 <ProductRequestsTable requests={productRequests} />
+              )}
+            </div>
+          )}
+          {activeTab === "delete-requests" && (
+            <div>
+              <h3 className="text-xl font-semibold mb-4">
+                Prośby o usunięcie produktów 
+                {deleteRequests.length > 0 && (
+                  <span className="ml-2 text-lg font-normal text-muted-foreground">
+                    ({deleteRequests.length})
+                  </span>
+                )}
+              </h3>
+              {deleteRequestsLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <DeleteRequestsTable requests={deleteRequests} />
               )}
             </div>
           )}

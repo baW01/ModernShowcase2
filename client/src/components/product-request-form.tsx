@@ -20,6 +20,7 @@ const formSchema = insertProductRequestSchema.extend({
   description: insertProductRequestSchema.shape.description.min(1, "Opis produktu jest wymagany"),
   contactPhone: insertProductRequestSchema.shape.contactPhone.min(1, "Telefon kontaktowy jest wymagany"),
   submitterName: insertProductRequestSchema.shape.submitterName.min(1, "Imię i nazwisko jest wymagane"),
+  submitterEmail: insertProductRequestSchema.shape.submitterEmail.min(1, "Email jest wymagany").email("Podaj prawidłowy adres email"),
   category: insertProductRequestSchema.shape.category.min(1, "Kategoria jest wymagana"),
 });
 
@@ -31,7 +32,7 @@ type FormData = {
   imageUrl?: string;
   contactPhone: string;
   submitterName: string;
-  submitterEmail?: string;
+  submitterEmail: string;
 };
 
 export function ProductRequestForm() {
@@ -131,11 +132,14 @@ export function ProductRequestForm() {
                 name="submitterEmail"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email (opcjonalny)</FormLabel>
+                    <FormLabel>Email *</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="jan@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
+                    <p className="text-xs text-gray-600">
+                      Email jest wymagany do wysłania potwierdzenia zatwierdzenia i możliwości usuwania produktu przez maila
+                    </p>
                   </FormItem>
                 )}
               />

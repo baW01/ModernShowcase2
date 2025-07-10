@@ -1,0 +1,120 @@
+import sgMail from '@sendgrid/mail';
+
+// Initialize SendGrid
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+export interface EmailParams {
+  to: string;
+  from: string;
+  subject: string;
+  text?: string;
+  html?: string;
+}
+
+export async function sendEmail(params: EmailParams): Promise<boolean> {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.warn('SENDGRID_API_KEY not found, email not sent');
+    return false;
+  }
+
+  try {
+    await sgMail.send({
+      to: params.to,
+      from: params.from,
+      subject: params.subject,
+      text: params.text,
+      html: params.html,
+    });
+    console.log(`Email sent successfully to ${params.to}`);
+    return true;
+  } catch (error) {
+    console.error('SendGrid email error:', error);
+    return false;
+  }
+}
+
+export function generateApprovalEmailHtml(productTitle: string, productId: number): string {
+  const deleteUrl = `${process.env.REPLIT_DOMAINS || 'http://localhost:3000'}/delete-request?productId=${productId}`;
+  
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Produkt zatwierdzony</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f4f4f4; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+        .footer { font-size: 12px; color: #666; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>✅ Twój produkt został zatwierdzony!</h1>
+        </div>
+        <div class="content">
+          <p>Witaj!</p>
+          <p>Mamy miłą wiadomość - Twój produkt "<strong>${productTitle}</strong>" został zatwierdzony przez administratora i jest już dostępny w naszym katalogu.</p>
+          
+          <h3>Co dalej?</h3>
+          <p>Twój produkt jest teraz widoczny dla wszystkich odwiedzających. Jeśli chcesz go usunąć, możesz to zrobić klikając przycisk poniżej:</p>
+          
+          <div style="text-align: center;">
+            <a href="${deleteUrl}" class="button">🗑️ Poproś o usunięcie produktu</a>
+          </div>
+          
+          <p><strong>Ważne:</strong> Link do usunięcia działa tylko dla tego adresu email. Jeśli chcesz usunąć produkt, kliknij przycisk powyżej, a administrator rozpatrzy Twoją prośbę.</p>
+        </div>
+        <div class="footer">
+          <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export function generateDeleteRequestEmailHtml(productTitle: string, reason?: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Prośba o usunięcie produktu</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f4f4f4; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .footer { font-size: 12px; color: #666; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>📝 Prośba o usunięcie otrzymana</h1>
+        </div>
+        <div class="content">
+          <p>Witaj!</p>
+          <p>Otrzymaliśmy Twoją prośbę o usunięcie produktu "<strong>${productTitle}</strong>".</p>
+          
+          ${reason ? `<p><strong>Powód usunięcia:</strong> ${reason}</p>` : ''}
+          
+          <p>Administrator rozpatrzy Twoją prośbę w ciągu najbliższych dni roboczych. O decyzji zostaniesz poinformowany na ten adres email.</p>
+          
+          <p>Dziękujemy za skorzystanie z naszej platformy!</p>
+        </div>
+        <div class="footer">
+          <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
