@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Phone, Check, Eye } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
 import { useEffect, useState } from "react";
 import { ContactModal } from "./contact-modal";
@@ -15,7 +15,16 @@ export function ProductCard({ product }: ProductCardProps) {
   
   // Track view when component mounts
   useEffect(() => {
-    apiRequest(`/api/products/${product.id}/view`, { method: 'POST' }).catch(() => {});
+    const trackView = async () => {
+      try {
+        await apiRequest('POST', `/api/products/${product.id}/view`);
+        // Invalidate products cache to refresh counts
+        queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      } catch (error) {
+        // Ignore errors, don't block view
+      }
+    };
+    trackView();
   }, [product.id]);
 
   const formatPrice = (priceInCents: number) => {
@@ -25,7 +34,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleContact = async () => {
     // Track contact click
     try {
-      await apiRequest(`/api/products/${product.id}/click`, { method: 'POST' });
+      await apiRequest('POST', `/api/products/${product.id}/click`);
+      // Invalidate products cache to refresh counts
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     } catch (error) {
       // Ignore errors, don't block contact action
     }

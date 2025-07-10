@@ -39,14 +39,14 @@ export function ContactModal({ isOpen, onClose, phoneNumber, productTitle }: Con
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="contact-description">
         <DialogHeader>
           <DialogTitle className="text-center">Kontakt z sprzedającym</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="text-center">
             <h3 className="font-semibold text-lg mb-2">{productTitle}</h3>
-            <p className="text-gray-600 text-sm mb-4">
+            <p id="contact-description" className="text-gray-600 text-sm mb-4">
               Skontaktuj się z sprzedającym, aby uzyskać więcej informacji o produkcie
             </p>
           </div>
