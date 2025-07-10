@@ -87,3 +87,34 @@ Preferred communication style: Simple, everyday language.
 - **Database Migration**: Ready for PostgreSQL with Drizzle schema
 
 The application is structured as a monorepo with shared types and schemas, making it easy to maintain consistency between frontend and backend while supporting both development and production environments.
+
+## Recent Changes
+
+### Latest modifications with dates (July 10, 2025)
+
+- Added cookie consent banner with Polish text and localStorage persistence
+- Updated product contact buttons to use clickable phone numbers (tel: links) for direct calling
+- Successfully integrated sample data: 5 products and 7 categories for proper testing
+- Added Categories management tab in admin panel with full CRUD functionality
+- Integrated product statistics tracking displaying views/clicks on product cards
+- Added sorting functionality for products by popularity/newest/price
+- Created and routed Terms and Privacy Policy pages
+- Integrated footer with donation links to suppi.pl/spottedgfc
+
+## Key Features Added
+
+### User Interface Enhancements
+- **Cookie Consent Banner**: EU-compliant cookie consent with Polish text
+- **Clickable Phone Numbers**: Direct calling functionality via tel: links
+- **Product Statistics**: View/click tracking displayed on product cards
+- **Product Sorting**: Sort by popularity, newest, or price (ascending/descending)
+
+### Admin Features
+- **Categories Management**: Full CRUD operations for product categories
+- **Product Management**: Enhanced product forms with category dropdown
+- **Statistics Dashboard**: View engagement metrics for products
+
+### Legal & Footer
+- **Terms of Service**: Polish terms page (/regulamin)
+- **Privacy Policy**: Polish privacy policy page (/polityka-prywatnosci)
+- **Donation Footer**: Links to suppi.pl/spottedgfc for financial support

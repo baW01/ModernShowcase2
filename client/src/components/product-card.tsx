@@ -27,11 +27,6 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
     } catch (error) {
       // Ignore errors, don't block contact action
     }
-
-    const phoneNumber = product.contactPhone || contactPhone;
-    if (phoneNumber) {
-      window.open(`tel:${phoneNumber}`, '_self');
-    }
   };
 
   return (
@@ -92,9 +87,12 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
               onClick={handleContact}
               className="bg-accent hover:bg-orange-600 text-white"
               size="sm"
+              asChild
             >
-              <Phone className="mr-2 h-4 w-4" />
-              Kontakt
+              <a href={`tel:${contactPhone || product.contactPhone}`}>
+                <Phone className="mr-2 h-4 w-4" />
+                Zadzwoń
+              </a>
             </Button>
           )}
         </div>
