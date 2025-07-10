@@ -14,31 +14,19 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [localViews, setLocalViews] = useState(product.views || 0);
   const [localClicks, setLocalClicks] = useState(product.clicks || 0);
-  const [viewTracked, setViewTracked] = useState(false);
-  
-  // Update local state when product props change
-  useEffect(() => {
-    setLocalViews(product.views || 0);
-    setLocalClicks(product.clicks || 0);
-  }, [product.views, product.clicks]);
   
   // Track view when component mounts
   useEffect(() => {
-    if (!viewTracked) {
-      const trackView = async () => {
-        try {
-          await apiRequest('POST', `/api/products/${product.id}/view`);
-          // Optimistically increment local view count
-          setLocalViews(prev => prev + 1);
-          setViewTracked(true);
-        } catch (error) {
-          // Ignore errors, don't block view
-          setViewTracked(true);
-        }
-      };
-      trackView();
-    }
-  }, [product.id, viewTracked]);
+    const trackView = async () => {
+      try {
+        await apiRequest('POST', `/api/products/${product.id}/view`);
+        // Don't invalidate cache to avoid scroll jumps
+      } catch (error) {
+        // Ignore errors, don't block view
+      }
+    };
+    trackView();
+  }, [product.id]);
 
   const formatPrice = (priceInCents: number) => {
     return `${(priceInCents / 100).toFixed(2)} zł`;
@@ -48,8 +36,7 @@ export function ProductCard({ product }: ProductCardProps) {
     // Track contact click
     try {
       await apiRequest('POST', `/api/products/${product.id}/click`);
-      // Optimistically increment local click count
-      setLocalClicks(prev => prev + 1);
+      // Don't invalidate cache to avoid scroll jumps
     } catch (error) {
       // Ignore errors, don't block contact action
     }
@@ -93,11 +80,11 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-center gap-3 text-xs text-gray-500">
             <div className="flex items-center gap-1">
               <Eye className="h-3 w-3" />
-              <span>{localViews}</span>
+              <span>{product.views || 0}</span>
             </div>
             <div className="flex items-center gap-1">
               <Phone className="h-3 w-3" />
-              <span>{localClicks}</span>
+              <span>{product.clicks || 0}</span>
             </div>
           </div>
         </div>
