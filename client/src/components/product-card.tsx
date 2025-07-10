@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Phone, Check } from "lucide-react";
+import { Phone, Check, Eye, MousePointer2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
+import { useEffect } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -9,11 +11,23 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, contactPhone }: ProductCardProps) {
+  // Track view when component mounts
+  useEffect(() => {
+    apiRequest(`/api/products/${product.id}/views`, { method: 'POST' }).catch(() => {});
+  }, [product.id]);
+
   const formatPrice = (priceInCents: number) => {
     return `${(priceInCents / 100).toFixed(2)} zł`;
   };
 
-  const handleContact = () => {
+  const handleContact = async () => {
+    // Track click
+    try {
+      await apiRequest(`/api/products/${product.id}/clicks`, { method: 'POST' });
+    } catch (error) {
+      // Ignore errors, don't block contact action
+    }
+
     const phoneNumber = product.contactPhone || contactPhone;
     if (phoneNumber) {
       window.open(`tel:${phoneNumber}`, '_self');
@@ -47,10 +61,23 @@ export function ProductCard({ product, contactPhone }: ProductCardProps) {
         <p className={`text-sm mb-3 ${product.isSold ? 'text-gray-500' : 'text-gray-600'}`}>
           {product.description}
         </p>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <span className={`text-2xl font-bold ${product.isSold ? 'text-sold' : 'text-primary'}`}>
             {formatPrice(product.price)}
           </span>
+          {/* Statistics */}
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              <span>{product.views || 0}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <MousePointer2 className="h-3 w-3" />
+              <span>{product.clicks || 0}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end">
           {product.isSold ? (
             <Button 
               disabled 

@@ -7,6 +7,7 @@ import { ProductsTable } from "@/components/products-table";
 import { ProductRequestsTable } from "@/components/product-requests-table";
 import { SettingsForm } from "@/components/settings-form";
 import { AdminLogin } from "@/components/admin-login";
+import { CategoriesManagement } from "@/components/categories-management";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import type { Product, Settings as SettingsType, ProductRequest } from "@shared/schema";
 import { useState } from "react";
@@ -95,6 +96,7 @@ export default function Admin() {
         <div className="mt-8">
           {activeTab === "products" && <ProductsTable products={products} />}
           {activeTab === "add-product" && <ProductForm />}
+          {activeTab === "categories" && <CategoriesManagement />}
           {activeTab === "requests" && (
             <div>
               <h3 className="text-xl font-semibold mb-4">

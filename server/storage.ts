@@ -1,14 +1,43 @@
-import { products, settings, productRequests, type Product, type InsertProduct, type Settings, type InsertSettings, type ProductRequest, type InsertProductRequest } from "@shared/schema";
+import { 
+  products, 
+  settings, 
+  productRequests, 
+  categories,
+  productViews,
+  productClicks,
+  type Product, 
+  type InsertProduct, 
+  type Settings, 
+  type InsertSettings, 
+  type ProductRequest, 
+  type InsertProductRequest,
+  type Category,
+  type InsertCategory,
+  type ProductView,
+  type ProductClick
+} from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc, sql, and } from "drizzle-orm";
 
 export interface IStorage {
   // Products
-  getProducts(): Promise<Product[]>;
+  getProducts(sortBy?: 'popularity' | 'newest' | 'price_asc' | 'price_desc'): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
   deleteProduct(id: number): Promise<boolean>;
+  
+  // Product Statistics
+  incrementProductViews(productId: number, ipAddress?: string, userAgent?: string): Promise<void>;
+  incrementProductClicks(productId: number, ipAddress?: string, userAgent?: string): Promise<void>;
+  getProductStats(productId: number): Promise<{ views: number; clicks: number }>;
+  
+  // Categories
+  getCategories(): Promise<Category[]>;
+  getCategory(id: number): Promise<Category | undefined>;
+  createCategory(category: InsertCategory): Promise<Category>;
+  updateCategory(id: number, category: Partial<InsertCategory>): Promise<Category | undefined>;
+  deleteCategory(id: number): Promise<boolean>;
   
   // Settings
   getSettings(): Promise<Settings | undefined>;
@@ -23,9 +52,26 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getProducts(): Promise<Product[]> {
+  async getProducts(sortBy: 'popularity' | 'newest' | 'price_asc' | 'price_desc' = 'newest'): Promise<Product[]> {
     try {
-      const productList = await db.select().from(products);
+      let query = db.select().from(products);
+      
+      switch (sortBy) {
+        case 'popularity':
+          query = query.orderBy(desc(sql`${products.views} + ${products.clicks} * 2`));
+          break;
+        case 'newest':
+          query = query.orderBy(desc(products.createdAt));
+          break;
+        case 'price_asc':
+          query = query.orderBy(products.price);
+          break;
+        case 'price_desc':
+          query = query.orderBy(desc(products.price));
+          break;
+      }
+      
+      const productList = await query;
       return productList;
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -175,6 +221,123 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error deleting product request:', error);
       throw new Error('Failed to delete product request from database');
+    }
+  }
+
+  // Product Statistics
+  async incrementProductViews(productId: number, ipAddress?: string, userAgent?: string): Promise<void> {
+    try {
+      // Log the view
+      await db.insert(productViews).values({
+        productId,
+        ipAddress,
+        userAgent,
+      });
+
+      // Increment the view count on the product
+      await db
+        .update(products)
+        .set({ views: sql`${products.views} + 1` })
+        .where(eq(products.id, productId));
+    } catch (error) {
+      console.error('Error incrementing product views:', error);
+      throw new Error('Failed to increment product views');
+    }
+  }
+
+  async incrementProductClicks(productId: number, ipAddress?: string, userAgent?: string): Promise<void> {
+    try {
+      // Log the click
+      await db.insert(productClicks).values({
+        productId,
+        ipAddress,
+        userAgent,
+      });
+
+      // Increment the click count on the product
+      await db
+        .update(products)
+        .set({ clicks: sql`${products.clicks} + 1` })
+        .where(eq(products.id, productId));
+    } catch (error) {
+      console.error('Error incrementing product clicks:', error);
+      throw new Error('Failed to increment product clicks');
+    }
+  }
+
+  async getProductStats(productId: number): Promise<{ views: number; clicks: number }> {
+    try {
+      const [product] = await db
+        .select({ views: products.views, clicks: products.clicks })
+        .from(products)
+        .where(eq(products.id, productId));
+      
+      return product ? { views: product.views, clicks: product.clicks } : { views: 0, clicks: 0 };
+    } catch (error) {
+      console.error('Error fetching product stats:', error);
+      throw new Error('Failed to fetch product stats');
+    }
+  }
+
+  // Categories
+  async getCategories(): Promise<Category[]> {
+    try {
+      const categoryList = await db.select().from(categories).where(eq(categories.isActive, true));
+      return categoryList;
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      throw new Error('Failed to fetch categories from database');
+    }
+  }
+
+  async getCategory(id: number): Promise<Category | undefined> {
+    try {
+      const [category] = await db.select().from(categories).where(eq(categories.id, id));
+      return category || undefined;
+    } catch (error) {
+      console.error('Error fetching category:', error);
+      throw new Error('Failed to fetch category from database');
+    }
+  }
+
+  async createCategory(insertCategory: InsertCategory): Promise<Category> {
+    try {
+      const [category] = await db
+        .insert(categories)
+        .values(insertCategory)
+        .returning();
+      return category;
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw new Error('Failed to create category in database');
+    }
+  }
+
+  async updateCategory(id: number, updates: Partial<InsertCategory>): Promise<Category | undefined> {
+    try {
+      const [updatedCategory] = await db
+        .update(categories)
+        .set(updates)
+        .where(eq(categories.id, id))
+        .returning();
+      return updatedCategory || undefined;
+    } catch (error) {
+      console.error('Error updating category:', error);
+      throw new Error('Failed to update category in database');
+    }
+  }
+
+  async deleteCategory(id: number): Promise<boolean> {
+    try {
+      // Soft delete by setting isActive to false
+      const result = await db
+        .update(categories)
+        .set({ isActive: false })
+        .where(eq(categories.id, id));
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      throw new Error('Failed to delete category from database');
     }
   }
 }

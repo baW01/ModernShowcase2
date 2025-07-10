@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Box, Plus, Settings, Package } from "lucide-react";
+import { Box, Plus, Settings, Package, Folder } from "lucide-react";
 
 interface AdminNavProps {
   activeTab: string;
@@ -10,6 +10,7 @@ export function AdminNav({ activeTab, onTabChange }: AdminNavProps) {
   const tabs = [
     { id: "products", label: "Produkty", icon: Box },
     { id: "add-product", label: "Dodaj produkt", icon: Plus },
+    { id: "categories", label: "Kategorie", icon: Folder },
     { id: "requests", label: "Prośby o produkty", icon: Package },
     { id: "settings", label: "Ustawienia", icon: Settings },
   ];
@@ -35,6 +36,7 @@ export function AdminNav({ activeTab, onTabChange }: AdminNavProps) {
               <span className="sm:hidden">
                 {tab.id === "products" && "Produkty"}
                 {tab.id === "add-product" && "Dodaj"}
+                {tab.id === "categories" && "Kategorie"}
                 {tab.id === "requests" && "Prośby"}
                 {tab.id === "settings" && "Ustawienia"}
               </span>

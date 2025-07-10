@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProductCard } from "@/components/product-card";
 import { ProductRequestForm } from "@/components/product-request-form";
+import { Footer } from "@/components/footer";
 import type { Product, Settings } from "@shared/schema";
 import { useState } from "react";
 
@@ -12,9 +13,11 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [sortBy, setSortBy] = useState<'popularity' | 'newest' | 'price_asc' | 'price_desc'>('newest');
 
   const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
+    queryKey: ["/api/products", sortBy],
+    queryFn: () => fetch(`/api/products?sortBy=${sortBy}`).then(res => res.json()),
   });
 
   const { data: settings, error: settingsError } = useQuery<Settings>({
@@ -161,9 +164,27 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Available Products */}
           <div className="mb-12">
-            <div className="mb-8">
-              <h3 className="text-2xl font-bold text-text mb-2">Dostępne produkty</h3>
-              <p className="text-gray-600">Skontaktuj się bezpośrednio ze sprzedawcami w sprawie zapytań</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+              <div>
+                <h3 className="text-2xl font-bold text-text mb-2">Dostępne produkty</h3>
+                <p className="text-gray-600">Skontaktuj się bezpośrednio ze sprzedawcami w sprawie zapytań</p>
+              </div>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <p className="text-gray-600">
+                  Znaleziono {availableProducts.length} {availableProducts.length === 1 ? 'produkt' : 'produktów'}
+                </p>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="Sortuj według" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Najnowsze</SelectItem>
+                    <SelectItem value="popularity">Najpopularniejsze</SelectItem>
+                    <SelectItem value="price_asc">Cena: rosnąco</SelectItem>
+                    <SelectItem value="price_desc">Cena: malejąco</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {availableProducts.length === 0 ? (
@@ -196,6 +217,7 @@ export default function Home() {
           )}
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

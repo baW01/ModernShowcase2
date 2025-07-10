@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { insertProductSchema } from "@shared/schema";
-import type { InsertProduct } from "@shared/schema";
+import type { InsertProduct, Category } from "@shared/schema";
 import { z } from "zod";
 import { ImageUploadDropzone } from "./image-upload-dropzone";
 
@@ -25,6 +25,10 @@ type FormData = z.infer<typeof formSchema>;
 export function ProductForm() {
   const [imageUrl, setImageUrl] = useState("");
   const { toast } = useToast();
+
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+  });
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -138,13 +142,11 @@ export function ProductForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Electronics">Elektronika</SelectItem>
-                        <SelectItem value="Fashion">Moda</SelectItem>
-                        <SelectItem value="Home & Garden">Dom i ogród</SelectItem>
-                        <SelectItem value="Sports & Outdoors">Sport i rekreacja</SelectItem>
-                        <SelectItem value="Books & Media">Książki i media</SelectItem>
-                        <SelectItem value="Accessories">Akcesoria</SelectItem>
-                        <SelectItem value="Other">Inne</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.name}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
