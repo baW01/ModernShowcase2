@@ -18,8 +18,7 @@ export function ProductCard({ product }: ProductCardProps) {
     const trackView = async () => {
       try {
         await apiRequest('POST', `/api/products/${product.id}/view`);
-        // Invalidate products cache to refresh counts
-        queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+        // Don't invalidate cache to avoid scroll jumps
       } catch (error) {
         // Ignore errors, don't block view
       }
@@ -35,8 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
     // Track contact click
     try {
       await apiRequest('POST', `/api/products/${product.id}/click`);
-      // Invalidate products cache to refresh counts
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      // Don't invalidate cache to avoid scroll jumps
     } catch (error) {
       // Ignore errors, don't block contact action
     }
