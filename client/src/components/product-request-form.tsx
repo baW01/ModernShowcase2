@@ -16,6 +16,11 @@ import { ImageUploadDropzone } from "@/components/image-upload-dropzone";
 
 const formSchema = insertProductRequestSchema.extend({
   price: insertProductRequestSchema.shape.price.transform((val) => Math.round(val * 100)),
+  title: insertProductRequestSchema.shape.title.min(1, "Nazwa produktu jest wymagana"),
+  description: insertProductRequestSchema.shape.description.min(1, "Opis produktu jest wymagany"),
+  contactPhone: insertProductRequestSchema.shape.contactPhone.min(1, "Telefon kontaktowy jest wymagany"),
+  submitterName: insertProductRequestSchema.shape.submitterName.min(1, "Imię i nazwisko jest wymagane"),
+  category: insertProductRequestSchema.shape.category.min(1, "Kategoria jest wymagana"),
 });
 
 type FormData = {

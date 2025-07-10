@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Phone, Check, Eye, MousePointer2 } from "lucide-react";
+import { Phone, Check, Eye } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
 import { useEffect, useState } from "react";
@@ -15,7 +15,7 @@ export function ProductCard({ product }: ProductCardProps) {
   
   // Track view when component mounts
   useEffect(() => {
-    apiRequest(`/api/products/${product.id}/views`, { method: 'POST' }).catch(() => {});
+    apiRequest(`/api/products/${product.id}/view`, { method: 'POST' }).catch(() => {});
   }, [product.id]);
 
   const formatPrice = (priceInCents: number) => {
@@ -23,9 +23,9 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const handleContact = async () => {
-    // Track click
+    // Track contact click
     try {
-      await apiRequest(`/api/products/${product.id}/clicks`, { method: 'POST' });
+      await apiRequest(`/api/products/${product.id}/click`, { method: 'POST' });
     } catch (error) {
       // Ignore errors, don't block contact action
     }
@@ -72,7 +72,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <span>{product.views || 0}</span>
             </div>
             <div className="flex items-center gap-1">
-              <MousePointer2 className="h-3 w-3" />
+              <Phone className="h-3 w-3" />
               <span>{product.clicks || 0}</span>
             </div>
           </div>
