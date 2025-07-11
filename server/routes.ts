@@ -289,6 +289,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const { status, adminNotes } = req.body;
       
+      console.log(`Updating delete request ${id} to status: ${status}`);
+      
       if (!["approved", "rejected"].includes(status)) {
         return res.status(400).json({ message: "Invalid status. Must be 'approved' or 'rejected'" });
       }
@@ -299,16 +301,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Delete request not found" });
       }
 
+      console.log(`Delete request updated successfully:`, deleteRequest);
+
       // If approved, delete the product
       if (status === "approved") {
+        console.log(`Attempting to delete product ${deleteRequest.productId}`);
         const success = await storage.deleteProduct(deleteRequest.productId);
         if (!success) {
           console.error('Failed to delete product after approving delete request');
+        } else {
+          console.log(`Product ${deleteRequest.productId} deleted successfully`);
         }
       }
       
       res.json(deleteRequest);
     } catch (error) {
+      console.error('Error in delete request status update:', error);
       res.status(500).json({ message: "Failed to update delete request status" });
     }
   });
