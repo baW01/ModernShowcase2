@@ -34,6 +34,15 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
       subject: params.subject,
       text: params.text,
       html: params.html,
+      trackingSettings: {
+        clickTracking: {
+          enable: false,
+          enableText: false
+        },
+        openTracking: {
+          enable: false
+        }
+      }
     });
     console.log(`Email sent successfully to ${params.to}`, result[0].statusCode);
     return true;
@@ -50,10 +59,16 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
 export function generateApprovalEmailHtml(productTitle: string, productId: number): string {
   // REPLIT_DOMAINS contains just the domain, need to add protocol
   const domain = process.env.REPLIT_DOMAINS;
-  const baseUrl = domain ? `https://${domain}` : 'http://localhost:5000';
+  console.log(`Raw REPLIT_DOMAINS: "${domain}"`);
+  
+  // Clean the domain to remove any extra characters or formatting
+  const cleanDomain = domain ? domain.trim().replace(/[,\s]+/g, '') : null;
+  console.log(`Cleaned domain: "${cleanDomain}"`);
+  
+  const baseUrl = cleanDomain ? `https://${cleanDomain}` : 'http://localhost:5000';
   const deleteUrl = `${baseUrl}/delete-request?productId=${productId}`;
   
-  console.log(`Generated delete URL: ${deleteUrl}`);
+  console.log(`Final generated delete URL: ${deleteUrl}`);
   
   return `
     <!DOCTYPE html>
