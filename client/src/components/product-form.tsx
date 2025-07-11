@@ -45,8 +45,10 @@ export function ProductForm() {
 
   const createProductMutation = useMutation({
     mutationFn: async (data: InsertProduct) => {
-      const response = await apiRequest("POST", "/api/products", data);
-      return response.json();
+      return await apiRequest("/api/products", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       toast({

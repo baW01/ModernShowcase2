@@ -53,8 +53,10 @@ export default function DeleteRequest() {
 
   const deleteRequestMutation = useMutation({
     mutationFn: async (data: DeleteRequestFormData & { productId: number }) => {
-      const response = await apiRequest("POST", "/api/delete-requests", data);
-      return response.json();
+      return await apiRequest("/api/delete-requests", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       setSubmitted(true);

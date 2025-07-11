@@ -30,8 +30,10 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: InsertSettings) => {
-      const response = await apiRequest("PUT", "/api/settings", data);
-      return response.json();
+      return await apiRequest("/api/settings", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       toast({

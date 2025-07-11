@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
+import { apiRequest } from "@/lib/queryClient";
 
-const ADMIN_SESSION_KEY = "admin_authenticated";
-const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+const TOKEN_KEY = "admin_jwt_token";
 
-interface AdminSession {
-  authenticated: boolean;
-  timestamp: number;
+interface LoginResponse {
+  token: string;
+  expiresIn: string;
+  message: string;
+}
+
+interface VerifyResponse {
+  valid: boolean;
+  isAdmin: boolean;
 }
 
 export function useAdminAuth() {
@@ -16,47 +22,64 @@ export function useAdminAuth() {
     checkAuthStatus();
   }, []);
 
-  const checkAuthStatus = () => {
+  const checkAuthStatus = async () => {
     try {
-      const sessionData = localStorage.getItem(ADMIN_SESSION_KEY);
-      if (sessionData) {
-        const session: AdminSession = JSON.parse(sessionData);
-        const now = Date.now();
-        
-        // Check if session is still valid (within 2 hours)
-        if (session.authenticated && (now - session.timestamp) < SESSION_DURATION) {
-          setIsAuthenticated(true);
-        } else {
-          // Session expired, clear it
-          localStorage.removeItem(ADMIN_SESSION_KEY);
-          setIsAuthenticated(false);
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        setIsAuthenticated(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // Verify token with backend
+      const response = await fetch("/api/auth/verify", {
+        headers: {
+          "Authorization": `Bearer ${token}`
         }
+      });
+
+      if (response.ok) {
+        const data: VerifyResponse = await response.json();
+        setIsAuthenticated(data.valid && data.isAdmin);
+      } else {
+        // Token is invalid or expired
+        localStorage.removeItem(TOKEN_KEY);
+        setIsAuthenticated(false);
       }
     } catch (error) {
-      // If there's any error parsing session data, clear it
-      localStorage.removeItem(ADMIN_SESSION_KEY);
+      // Network error or other issue
+      console.error("Auth check failed:", error);
       setIsAuthenticated(false);
     }
     setIsLoading(false);
   };
 
-  const login = (password: string) => {
-    // In a real app, you'd verify this with a backend
-    if (password === "Kopia15341534!") {
-      const session: AdminSession = {
-        authenticated: true,
-        timestamp: Date.now(),
-      };
-      localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(session));
-      setIsAuthenticated(true);
-      return true;
+  const login = async (password: string): Promise<boolean> => {
+    try {
+      const response = await apiRequest<LoginResponse>("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ password }),
+      });
+
+      if (response.token) {
+        localStorage.setItem(TOKEN_KEY, response.token);
+        setIsAuthenticated(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Login failed:", error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
-    localStorage.removeItem(ADMIN_SESSION_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     setIsAuthenticated(false);
+  };
+
+  const getToken = () => {
+    return localStorage.getItem(TOKEN_KEY);
   };
 
   return {
@@ -64,5 +87,6 @@ export function useAdminAuth() {
     isLoading,
     login,
     logout,
+    getToken,
   };
 }

@@ -23,11 +23,13 @@ export function DeleteRequestsTable({ requests }: DeleteRequestsTableProps) {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: number; status: string; notes: string }) => {
-      const response = await apiRequest("PUT", `/api/delete-requests/${id}/status`, {
-        status,
-        adminNotes: notes,
+      return await apiRequest(`/api/delete-requests/${id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({
+          status,
+          adminNotes: notes,
+        }),
       });
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/delete-requests"] });
@@ -50,8 +52,9 @@ export function DeleteRequestsTable({ requests }: DeleteRequestsTableProps) {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/delete-requests/${id}`);
-      return response.json();
+      return await apiRequest(`/api/delete-requests/${id}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/delete-requests"] });

@@ -22,11 +22,13 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: number; status: string; notes: string }) => {
-      const response = await apiRequest("PUT", `/api/product-requests/${id}/status`, {
-        status,
-        adminNotes: notes,
+      return await apiRequest(`/api/product-requests/${id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({
+          status,
+          adminNotes: notes,
+        }),
       });
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/product-requests"] });
@@ -48,8 +50,9 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
 
   const convertToProductMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("POST", `/api/product-requests/${id}/convert`);
-      return response.json();
+      return await apiRequest(`/api/product-requests/${id}/convert`, {
+        method: "POST",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/product-requests"] });
@@ -70,8 +73,9 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/product-requests/${id}`);
-      return response.json();
+      return await apiRequest(`/api/product-requests/${id}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/product-requests"] });

@@ -63,8 +63,10 @@ export function EditProductModal({ product, isOpen, onClose }: EditProductModalP
   const updateProductMutation = useMutation({
     mutationFn: async (data: Partial<InsertProduct>) => {
       if (!product) throw new Error("No product to update");
-      const response = await apiRequest("PUT", `/api/products/${product.id}`, data);
-      return response.json();
+      return await apiRequest(`/api/products/${product.id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       toast({

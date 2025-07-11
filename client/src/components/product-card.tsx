@@ -17,7 +17,9 @@ export function ProductCard({ product }: ProductCardProps) {
   useEffect(() => {
     const trackView = async () => {
       try {
-        await apiRequest('POST', `/api/products/${product.id}/view`);
+        await apiRequest(`/api/products/${product.id}/view`, {
+          method: 'POST',
+        });
         // Don't invalidate cache to avoid scroll jumps
       } catch (error) {
         // Ignore errors, don't block view
@@ -33,7 +35,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleContact = async () => {
     // Track contact click
     try {
-      await apiRequest('POST', `/api/products/${product.id}/click`);
+      await apiRequest(`/api/products/${product.id}/click`, {
+        method: 'POST',
+      });
       // Don't invalidate cache to avoid scroll jumps
     } catch (error) {
       // Ignore errors, don't block contact action

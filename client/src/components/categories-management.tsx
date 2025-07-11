@@ -38,8 +38,10 @@ export function CategoriesManagement() {
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertCategory) => {
-      const response = await apiRequest("POST", "/api/categories", data);
-      return response.json();
+      return await apiRequest("/api/categories", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       toast({ title: "Sukces", description: "Kategoria została dodana" });
@@ -54,8 +56,10 @@ export function CategoriesManagement() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertCategory> }) => {
-      const response = await apiRequest("PUT", `/api/categories/${id}`, data);
-      return response.json();
+      return await apiRequest(`/api/categories/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       toast({ title: "Sukces", description: "Kategoria została zaktualizowana" });
@@ -70,8 +74,9 @@ export function CategoriesManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/categories/${id}`);
-      return response.json();
+      return await apiRequest(`/api/categories/${id}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
       toast({ title: "Sukces", description: "Kategoria została usunięta" });

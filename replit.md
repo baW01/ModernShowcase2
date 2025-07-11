@@ -88,7 +88,34 @@ Preferred communication style: Simple, everyday language.
 
 The application is structured as a monorepo with shared types and schemas, making it easy to maintain consistency between frontend and backend while supporting both development and production environments.
 
+## Security Features
+
+### Authentication & Authorization (July 11, 2025)
+- **JWT Token-based Authentication**: Secure server-side authentication using JSON Web Tokens
+- **Protected API Endpoints**: All admin endpoints require valid JWT tokens
+- **Rate Limiting**: Prevents brute force attacks on authentication endpoints
+- **Security Headers**: Helmet.js for XSS protection, CSP, and other security headers
+- **CORS Configuration**: Properly configured Cross-Origin Resource Sharing
+- **Password Hashing**: Bcrypt for secure password storage (no plaintext passwords)
+- **Environment Variables**: Sensitive configuration stored in .env file
+
+### Security Implementation Details
+- JWT tokens expire after 24 hours
+- Rate limiting: 5 login attempts per 15 minutes per IP
+- General API rate limit: 100 requests per 15 minutes per IP
+- Authorization header format: `Bearer <token>`
+- All admin operations require authentication token
+
 ## Recent Changes
+
+### Latest modifications with dates (July 11, 2025)
+- **Implemented comprehensive JWT-based security system**
+  - Added server-side authentication with bcrypt password hashing
+  - Protected all admin API endpoints with authentication middleware
+  - Implemented rate limiting to prevent brute force attacks
+  - Added security headers (Helmet.js) for XSS and CSRF protection
+  - Updated frontend to use JWT tokens for all authenticated requests
+  - Created secure .env configuration for sensitive data
 
 ### Latest modifications with dates (July 10, 2025)
 

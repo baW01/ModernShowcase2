@@ -3,9 +3,48 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProductSchema, insertSettingsSchema, insertProductRequestSchema, insertCategorySchema } from "@shared/schema";
 import { z } from "zod";
+import { generateToken, verifyPassword, authenticateToken, requireAdmin, authRateLimitConfig } from "./auth";
+import rateLimit from "express-rate-limit";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get all products with optional sorting
+  // Create auth rate limiter
+  const authLimiter = rateLimit(authRateLimitConfig);
+
+  // Authentication endpoint
+  app.post("/api/auth/login", authLimiter, async (req, res) => {
+    try {
+      const { password } = req.body;
+
+      if (!password) {
+        return res.status(400).json({ message: "Password is required" });
+      }
+
+      const isValid = await verifyPassword(password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid password" });
+      }
+
+      const token = generateToken(true); // Admin login
+      res.json({ 
+        token, 
+        expiresIn: '24h',
+        message: "Login successful" 
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Verify token endpoint
+  app.get("/api/auth/verify", authenticateToken, (req, res) => {
+    res.json({ 
+      valid: true, 
+      isAdmin: req.user?.isAdmin || false 
+    });
+  });
+
+  // Get all products with optional sorting - PUBLIC endpoint
   app.get("/api/products", async (req, res) => {
     try {
       const sortBy = req.query.sortBy as 'popularity' | 'newest' | 'price_asc' | 'price_desc' | undefined;
@@ -32,8 +71,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new product
-  app.post("/api/products", async (req, res) => {
+  // Create new product - ADMIN ONLY
+  app.post("/api/products", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const validatedData = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(validatedData);
@@ -46,8 +85,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update product
-  app.put("/api/products/:id", async (req, res) => {
+  // Update product - ADMIN ONLY
+  app.put("/api/products/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = insertProductSchema.partial().parse(req.body);
@@ -66,8 +105,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete product
-  app.delete("/api/products/:id", async (req, res) => {
+  // Delete product - ADMIN ONLY
+  app.delete("/api/products/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteProduct(id);
@@ -92,8 +131,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update settings
-  app.put("/api/settings", async (req, res) => {
+  // Update settings - ADMIN ONLY
+  app.put("/api/settings", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const validatedData = insertSettingsSchema.parse(req.body);
       const settings = await storage.updateSettings(validatedData);
@@ -106,8 +145,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all product requests
-  app.get("/api/product-requests", async (req, res) => {
+  // Get all product requests - ADMIN ONLY
+  app.get("/api/product-requests", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const requests = await storage.getProductRequests();
       res.json(requests);
@@ -130,8 +169,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update product request status (approve/reject)
-  app.put("/api/product-requests/:id/status", async (req, res) => {
+  // Update product request status (approve/reject) - ADMIN ONLY
+  app.put("/api/product-requests/:id/status", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { status, adminNotes } = req.body;
@@ -152,8 +191,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Convert approved product request to actual product
-  app.post("/api/product-requests/:id/convert", async (req, res) => {
+  // Convert approved product request to actual product - ADMIN ONLY
+  app.post("/api/product-requests/:id/convert", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const request = await storage.getProductRequest(id);
@@ -213,8 +252,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete product request
-  app.delete("/api/product-requests/:id", async (req, res) => {
+  // Delete product request - ADMIN ONLY
+  app.delete("/api/product-requests/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteProductRequest(id);
@@ -229,8 +268,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete Requests routes
-  app.get("/api/delete-requests", async (req, res) => {
+  // Delete Requests routes - ADMIN ONLY
+  app.get("/api/delete-requests", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const requests = await storage.getDeleteRequests();
       res.json(requests);
@@ -284,7 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/delete-requests/:id/status", async (req, res) => {
+  app.put("/api/delete-requests/:id/status", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { status, adminNotes } = req.body;
@@ -331,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/delete-requests/:id", async (req, res) => {
+  app.delete("/api/delete-requests/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteDeleteRequest(id);
@@ -391,7 +430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/categories", async (req, res) => {
+  app.post("/api/categories", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const validatedData = insertCategorySchema.parse(req.body);
       const category = await storage.createCategory(validatedData);
@@ -404,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/categories/:id", async (req, res) => {
+  app.put("/api/categories/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = insertCategorySchema.partial().parse(req.body);
@@ -423,7 +462,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/categories/:id", async (req, res) => {
+  app.delete("/api/categories/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteCategory(id);

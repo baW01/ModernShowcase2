@@ -16,7 +16,7 @@ const loginSchema = z.object({
 type LoginData = z.infer<typeof loginSchema>;
 
 interface AdminLoginProps {
-  onLogin: (password: string) => void;
+  onLogin: (password: string) => Promise<boolean>;
 }
 
 export function AdminLogin({ onLogin }: AdminLoginProps) {
@@ -34,9 +34,8 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
   const onSubmit = async (data: LoginData) => {
     setIsLoading(true);
     try {
-      // Sprawdź hasło (w tym przypadku: "Kopia15341534!")
-      if (data.password === "Kopia15341534!") {
-        onLogin(data.password);
+      const success = await onLogin(data.password);
+      if (success) {
         toast({
           title: "Sukces",
           description: "Zalogowano pomyślnie",

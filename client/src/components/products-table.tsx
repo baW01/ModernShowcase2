@@ -21,8 +21,10 @@ export function ProductsTable({ products }: ProductsTableProps) {
 
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Product> }) => {
-      const response = await apiRequest("PUT", `/api/products/${id}`, data);
-      return response.json();
+      return await apiRequest(`/api/products/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
@@ -42,8 +44,9 @@ export function ProductsTable({ products }: ProductsTableProps) {
 
   const deleteProductMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/products/${id}`);
-      return response.json();
+      return await apiRequest(`/api/products/${id}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
