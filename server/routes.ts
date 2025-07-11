@@ -303,9 +303,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Delete request updated successfully:`, deleteRequest);
 
-      // If approved, delete the product
+      // If approved, delete the product and then the delete request
       if (status === "approved") {
         console.log(`Attempting to delete product ${deleteRequest.productId}`);
+        
+        // First delete the delete request to avoid foreign key constraint
+        const deleteRequestRemoved = await storage.deleteDeleteRequest(id);
+        if (!deleteRequestRemoved) {
+          console.error('Failed to delete the delete request record');
+        } else {
+          console.log('Delete request record removed successfully');
+        }
+        
+        // Then delete the product
         const success = await storage.deleteProduct(deleteRequest.productId);
         if (!success) {
           console.error('Failed to delete product after approving delete request');
