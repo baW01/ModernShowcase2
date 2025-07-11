@@ -51,10 +51,15 @@ export default function Privacy() {
             Dane osobowe mogą być udostępniane wyłącznie:
           </p>
           <ul>
-            <li>Innym użytkownikom w zakresie danych kontaktowych przy produktach</li>
+            <li>Innym użytkownikom w zakresie danych kontaktowych przy produktach (numer telefonu)</li>
             <li>Podmiotom świadczącym usługi techniczne</li>
             <li>Organom państwowym na podstawie przepisów prawa</li>
           </ul>
+          <p>
+            <strong>Ochrona prywatności:</strong> Adresy email użytkowników nie są udostępniane publicznie. 
+            Są one używane wyłącznie do komunikacji administracyjnej oraz w procesie zarządzania 
+            wnioskami o produkty i prośbami o usunięcie.
+          </p>
 
           <h2>6. Okres przechowywania danych</h2>
           <p>
@@ -79,8 +84,34 @@ export default function Privacy() {
             zabezpieczenia danych osobowych przed nieuprawnionym dostępem, 
             utratą, zniszczeniem lub uszkodzeniem.
           </p>
+          <p>
+            <strong>Środki bezpieczeństwa obejmują:</strong>
+          </p>
+          <ul>
+            <li>Szyfrowanie haseł administracyjnych przy użyciu bcrypt</li>
+            <li>Autoryzację JWT dla dostępu do funkcji administracyjnych</li>
+            <li>Ograniczenie prób logowania (rate limiting)</li>
+            <li>Rozdział dostępu - dane wrażliwe dostępne tylko dla administratorów</li>
+            <li>Bezpieczne nagłówki HTTP (XSS, CSRF protection)</li>
+            <li>Filtrowanie danych publicznych - usunięcie wrażliwych informacji z publicznych API</li>
+          </ul>
 
-          <h2>9. Pliki cookies i śledzenie</h2>
+          <h2>9. Prośby o usunięcie danych i produktów</h2>
+          <p>
+            Użytkownicy mogą składać prośby o usunięcie swoich produktów z platformy:
+          </p>
+          <ul>
+            <li>Prośba musi być złożona z tego samego adresu email, który był użyty przy dodawaniu produktu</li>
+            <li>Wszystkie prośby są weryfikowane przez administratorów przed realizacją</li>
+            <li>Po zatwierdzeniu prośby produkt zostaje trwale usunięty z platformy</li>
+            <li>Dane kontaktowe są automatycznie usuwane wraz z produktem</li>
+            <li>Administrator powiadamia użytkownika email o statusie prośby</li>
+          </ul>
+          <p>
+            Ten proces zapewnia kontrolę nad danymi osobowymi zgodnie z prawem do bycia zapomnianym (art. 17 RODO).
+          </p>
+
+          <h2>10. Pliki cookies i śledzenie</h2>
           <p>
             Platforma wykorzystuje pliki cookies oraz systemy śledzenia w celu:
           </p>
@@ -96,7 +127,7 @@ export default function Privacy() {
             anonimowo z uwzględnieniem adresu IP w celu unikania duplikatów.
           </p>
 
-          <h2>10. Kontakt</h2>
+          <h2>11. Kontakt</h2>
           <p>
             W sprawach dotyczących ochrony danych osobowych można kontaktować się 
             pod adresem: <a href="mailto:kontakt@spottedgfc.pl" className="text-primary hover:underline">kontakt@spottedgfc.pl</a>

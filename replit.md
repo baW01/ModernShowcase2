@@ -114,6 +114,9 @@ The application is structured as a monorepo with shared types and schemas, makin
   - Added dedicated `/api/admin/products` endpoint for authenticated admin access with full data
   - Updated all admin frontend components to use secure admin endpoints
   - Verified authentication works correctly - public endpoints return filtered data, admin endpoints require JWT
+  - **Updated Privacy Policy** to reflect new security measures and data protection practices
+  - Added detailed security measures documentation (JWT, bcrypt, rate limiting, data filtering)
+  - Documented deletion request process and GDPR compliance (right to be forgotten)
   - Maintained data privacy while preserving admin functionality
 
 - **Implemented comprehensive JWT-based security system**
