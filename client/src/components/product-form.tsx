@@ -57,7 +57,7 @@ export function ProductForm() {
       });
       form.reset();
       setImageUrl("");
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
     },
     onError: (error) => {
       toast({

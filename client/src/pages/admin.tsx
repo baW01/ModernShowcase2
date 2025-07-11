@@ -18,7 +18,7 @@ export default function Admin() {
   const { isAuthenticated, isLoading: authLoading, login, logout } = useAdminAuth();
 
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
+    queryKey: ["/api/admin/products"],
     enabled: isAuthenticated, // Only fetch when authenticated
   });
 

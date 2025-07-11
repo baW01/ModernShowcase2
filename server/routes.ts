@@ -44,18 +44,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Get all products with optional sorting - PUBLIC endpoint
+  // Get all products with optional sorting - PUBLIC endpoint (filtered for public view)
   app.get("/api/products", async (req, res) => {
     try {
       const sortBy = req.query.sortBy as 'popularity' | 'newest' | 'price_asc' | 'price_desc' | undefined;
       const products = await storage.getProducts(sortBy);
-      res.json(products);
+      
+      // Filter out sensitive data for public view
+      const publicProducts = products.map(product => ({
+        id: product.id,
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        categoryId: product.categoryId,
+        category: product.category,
+        imageUrl: product.imageUrl,
+        contactPhone: product.contactPhone,
+        isSold: product.isSold,
+        views: product.views,
+        clicks: product.clicks,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt
+        // submitterEmail removed for privacy
+      }));
+      
+      res.json(publicProducts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch products" });
     }
   });
 
-  // Get single product
+  // Get single product - PUBLIC endpoint (filtered for public view)
   app.get("/api/products/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -65,9 +84,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Product not found" });
       }
       
-      res.json(product);
+      // Filter out sensitive data for public view
+      const publicProduct = {
+        id: product.id,
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        categoryId: product.categoryId,
+        category: product.category,
+        imageUrl: product.imageUrl,
+        contactPhone: product.contactPhone,
+        isSold: product.isSold,
+        views: product.views,
+        clicks: product.clicks,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt
+        // submitterEmail removed for privacy
+      };
+      
+      res.json(publicProduct);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch product" });
+    }
+  });
+
+  // Get all products for admin - ADMIN ONLY (with full data including sensitive fields)
+  app.get("/api/admin/products", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const sortBy = req.query.sortBy as 'popularity' | 'newest' | 'price_asc' | 'price_desc' | undefined;
+      const products = await storage.getProducts(sortBy);
+      res.json(products); // Return full data including submitterEmail
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch products" });
     }
   });
 

@@ -33,7 +33,7 @@ export function DeleteRequestsTable({ requests }: DeleteRequestsTableProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/delete-requests"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
       setSelectedRequest(null);
       setAdminNotes("");
       toast({

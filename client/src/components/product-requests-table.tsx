@@ -56,7 +56,7 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/product-requests"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
       toast({
         title: "Sukces",
         description: "Produkt został dodany do katalogu",

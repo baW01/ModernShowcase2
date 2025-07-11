@@ -109,6 +109,13 @@ The application is structured as a monorepo with shared types and schemas, makin
 ## Recent Changes
 
 ### Latest modifications with dates (July 11, 2025)
+- **Enhanced API Security and Data Privacy** (Evening, July 11, 2025)
+  - Fixed public API endpoints to filter sensitive data (removed submitterEmail from public responses)
+  - Added dedicated `/api/admin/products` endpoint for authenticated admin access with full data
+  - Updated all admin frontend components to use secure admin endpoints
+  - Verified authentication works correctly - public endpoints return filtered data, admin endpoints require JWT
+  - Maintained data privacy while preserving admin functionality
+
 - **Implemented comprehensive JWT-based security system**
   - Added server-side authentication with bcrypt password hashing
   - Protected all admin API endpoints with authentication middleware
