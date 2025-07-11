@@ -48,7 +48,12 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
 }
 
 export function generateApprovalEmailHtml(productTitle: string, productId: number): string {
-  const deleteUrl = `${process.env.REPLIT_DOMAINS || 'http://localhost:3000'}/delete-request?productId=${productId}`;
+  // REPLIT_DOMAINS contains just the domain, need to add protocol
+  const domain = process.env.REPLIT_DOMAINS;
+  const baseUrl = domain ? `https://${domain}` : 'http://localhost:5000';
+  const deleteUrl = `${baseUrl}/delete-request?productId=${productId}`;
+  
+  console.log(`Generated delete URL: ${deleteUrl}`);
   
   return `
     <!DOCTYPE html>
