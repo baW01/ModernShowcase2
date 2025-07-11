@@ -57,15 +57,15 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
 }
 
 export function generateApprovalEmailHtml(productTitle: string, productId: number): string {
-  // REPLIT_DOMAINS contains just the domain, need to add protocol
-  const domain = process.env.REPLIT_DOMAINS;
-  console.log(`Raw REPLIT_DOMAINS: "${domain}"`);
+  // REPLIT_DOMAINS may contain multiple domains separated by comma
+  const domains = process.env.REPLIT_DOMAINS;
+  console.log(`Raw REPLIT_DOMAINS: "${domains}"`);
   
-  // Clean the domain to remove any extra characters or formatting
-  const cleanDomain = domain ? domain.trim().replace(/[,\s]+/g, '') : null;
-  console.log(`Cleaned domain: "${cleanDomain}"`);
+  // Take only the first domain and clean it
+  const firstDomain = domains ? domains.split(',')[0].trim() : null;
+  console.log(`First domain: "${firstDomain}"`);
   
-  const baseUrl = cleanDomain ? `https://${cleanDomain}` : 'http://localhost:5000';
+  const baseUrl = firstDomain ? `https://${firstDomain}` : 'http://localhost:5000';
   const deleteUrl = `${baseUrl}/delete-request?productId=${productId}`;
   
   console.log(`Final generated delete URL: ${deleteUrl}`);

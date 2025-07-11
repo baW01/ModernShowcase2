@@ -36,8 +36,10 @@ export default function DeleteRequest() {
   });
 
   useEffect(() => {
+    console.log('Current location:', location);
     const urlParams = new URLSearchParams(location.split('?')[1] || '');
     const productIdParam = urlParams.get('productId');
+    console.log('Extracted productId:', productIdParam);
     setProductId(productIdParam);
   }, [location]);
 
