@@ -15,7 +15,19 @@ export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000, // Increased timeout to 10 seconds
 });
 
 export const db = drizzle({ client: pool, schema });
+
+// Test the connection on startup
+export async function testConnection() {
+  try {
+    const client = await pool.connect();
+    console.log('Database connection established successfully');
+    client.release();
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    throw error;
+  }
+}
