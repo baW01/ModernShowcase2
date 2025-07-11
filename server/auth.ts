@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 // Get environment variables with defaults for development
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret-change-in-production';
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$10$Q7.xGqVlWR3KvXHGFZGNLe4xqKhMHGxHvXmYFxXhZVSbgXzz.KFZS'; // Default: "Kopia15341534!"
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2b$10$Mn.pzelumhNZ9YHk7ExuWeuxq89xghA6SNFVzgId2mAXpviDbiUEO'; // Default: "Kopia15341534!"
 
 interface JWTPayload {
   isAdmin: boolean;
