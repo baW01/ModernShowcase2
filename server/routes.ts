@@ -181,18 +181,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send approval email to submitter
       if (request.submitterEmail) {
+        console.log(`Sending approval email to: ${request.submitterEmail} for product: ${request.title}`);
         const { sendEmail, generateApprovalEmailHtml } = await import('./email');
         try {
-          await sendEmail({
+          const emailSent = await sendEmail({
             to: request.submitterEmail,
             from: process.env.FROM_EMAIL || 'noreply@spotted-gfc.com',
             subject: 'Twój produkt został zatwierdzony! ✅',
             html: generateApprovalEmailHtml(request.title, product.id)
           });
+          
+          if (emailSent) {
+            console.log('Approval email sent successfully');
+          } else {
+            console.log('Approval email failed to send (returned false)');
+          }
         } catch (emailError) {
           console.error('Failed to send approval email:', emailError);
           // Don't fail the product creation if email fails
         }
+      } else {
+        console.log('No submitter email found, skipping approval email');
       }
       
       // Delete the request after conversion

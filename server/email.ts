@@ -19,18 +19,30 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
     return false;
   }
 
+  if (!process.env.FROM_EMAIL) {
+    console.warn('FROM_EMAIL not found, email not sent');
+    return false;
+  }
+
+  console.log(`Attempting to send email to: ${params.to} from: ${params.from}`);
+  console.log(`Subject: ${params.subject}`);
+
   try {
-    await sgMail.send({
+    const result = await sgMail.send({
       to: params.to,
       from: params.from,
       subject: params.subject,
       text: params.text,
       html: params.html,
     });
-    console.log(`Email sent successfully to ${params.to}`);
+    console.log(`Email sent successfully to ${params.to}`, result[0].statusCode);
     return true;
-  } catch (error) {
-    console.error('SendGrid email error:', error);
+  } catch (error: any) {
+    console.error('SendGrid email error:', {
+      message: error.message,
+      code: error.code,
+      response: error.response?.body || 'No response body'
+    });
     return false;
   }
 }
