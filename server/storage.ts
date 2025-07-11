@@ -426,6 +426,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateDeleteRequestStatus(id: number, status: "approved" | "rejected", adminNotes?: string): Promise<DeleteRequest | undefined> {
     try {
+      console.log(`Attempting to update delete request ${id} to status ${status}`);
       const [updatedRequest] = await db
         .update(deleteRequests)
         .set({
@@ -435,10 +436,12 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(deleteRequests.id, id))
         .returning();
+      console.log('Database update result:', updatedRequest);
       return updatedRequest || undefined;
     } catch (error) {
       console.error('Error updating delete request status:', error);
-      throw new Error('Failed to update delete request status in database');
+      console.error('Error details:', error);
+      throw error; // Re-throw the original error instead of wrapping it
     }
   }
 
