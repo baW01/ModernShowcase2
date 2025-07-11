@@ -1,0 +1,86 @@
+queryClient.ts:31 
+        
+        
+       POST https://4e34576f-b2e7-4428-9f1b-5ed235889568-00-1ojhhrh97bde3.riker.replit.dev/api/auth/login 401 (Unauthorized)
+apiRequest @ queryClient.ts:31
+login @ use-admin-auth.ts:59
+onSubmit @ admin-login.tsx:37
+(anonymous) @ chunk-4BFJKWC4.js?v=c0df3431:1465
+await in (anonymous) (async)
+callCallback2 @ chunk-RPCDYKBN.js?v=c0df3431:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=c0df3431:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=c0df3431:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=c0df3431:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=c0df3431:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=c0df3431:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=c0df3431:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=c0df3431:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=c0df3431:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=c0df3431:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=c0df3431:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=c0df3431:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=c0df3431:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=c0df3431:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=c0df3431:5449
+Show 16 more frames
+Show less
+use-admin-auth.ts:71 Login failed: Error: 401: {"message":"Invalid password"}
+    at throwIfResNotOk (queryClient.ts:6:11)
+    at async apiRequest (queryClient.ts:37:3)
+    at async login (use-admin-auth.ts:59:24)
+    at async onSubmit (admin-login.tsx:37:23)
+    at async chunk-4BFJKWC4.js?v=c0df3431:1465:9
+login @ use-admin-auth.ts:71
+await in login (async)
+onSubmit @ admin-login.tsx:37
+(anonymous) @ chunk-4BFJKWC4.js?v=c0df3431:1465
+await in (anonymous) (async)
+callCallback2 @ chunk-RPCDYKBN.js?v=c0df3431:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=c0df3431:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=c0df3431:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=c0df3431:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=c0df3431:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=c0df3431:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=c0df3431:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=c0df3431:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=c0df3431:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=c0df3431:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=c0df3431:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=c0df3431:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=c0df3431:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=c0df3431:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=c0df3431:5449
+Show 16 more frames
+Show less
+queryClient.ts:31 
+        
+        
+       POST https://4e34576f-b2e7-4428-9f1b-5ed235889568-00-1ojhhrh97bde3.riker.replit.dev/api/auth/login 401 (Unauthorized)
+apiRequest @ queryClient.ts:31
+login @ use-admin-auth.ts:59
+onSubmit @ admin-login.tsx:37
+(anonymous) @ chunk-4BFJKWC4.js?v=c0df3431:1465
+await in (anonymous) (async)
+callCallback2 @ chunk-RPCDYKBN.js?v=c0df3431:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=c0df3431:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=c0df3431:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=c0df3431:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=c0df3431:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=c0df3431:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=c0df3431:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=c0df3431:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=c0df3431:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=c0df3431:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=c0df3431:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=c0df3431:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=c0df3431:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=c0df3431:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=c0df3431:5449
+Show 16 more frames
+Show less
+use-admin-auth.ts:71 Login failed: Error: 401: {"message":"Invalid password"}
+    at throwIfResNotOk (queryClient.ts:6:11)
+    at async apiRequest (queryClient.ts:37:3)
+    at async login (use-admin-auth.ts:59:24)
+    at async onSubmit (admin-login.tsx:37:23)
+    at async chunk-4BFJKWC4.js?v=c0df3431:1465:9
