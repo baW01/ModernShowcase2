@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -10,8 +10,35 @@ interface ImageGalleryProps {
 
 export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [startX, setStartX] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Add global mouse event listeners for smooth dragging
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        handlePointerMove(e.clientX);
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (isDragging) {
+        handlePointerEnd();
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging, startX, dragOffset]);
 
   // If no images or only one image, show single image
   if (!images || images.length === 0) {
@@ -49,56 +76,119 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
 
   const goToImage = (index: number) => {
     setCurrentImageIndex(index);
+    setDragOffset(0);
   };
 
-  // Handle touch events for swiping
+  // Calculate the transform offset for smooth dragging
+  const getTransformOffset = () => {
+    const baseOffset = -currentImageIndex * 100;
+    const dragOffsetPercent = (dragOffset / (containerRef.current?.offsetWidth || 1)) * 100;
+    return baseOffset + dragOffsetPercent;
+  };
+
+  // Handle mouse/touch start
+  const handlePointerStart = (clientX: number) => {
+    setIsDragging(true);
+    setStartX(clientX);
+    setDragOffset(0);
+  };
+
+  // Handle mouse/touch move
+  const handlePointerMove = (clientX: number) => {
+    if (!isDragging) return;
+    
+    const diff = clientX - startX;
+    setDragOffset(diff);
+  };
+
+  // Handle mouse/touch end
+  const handlePointerEnd = () => {
+    if (!isDragging) return;
+    
+    setIsDragging(false);
+    
+    const threshold = 50; // minimum distance to trigger slide
+    const containerWidth = containerRef.current?.offsetWidth || 300;
+    const dragPercent = Math.abs(dragOffset) / containerWidth;
+    
+    if (Math.abs(dragOffset) > threshold && dragPercent > 0.15) {
+      if (dragOffset > 0 && currentImageIndex > 0) {
+        // Dragged right - go to previous image
+        prevImage();
+      } else if (dragOffset < 0 && currentImageIndex < images.length - 1) {
+        // Dragged left - go to next image
+        nextImage();
+      }
+    }
+    
+    setDragOffset(0);
+  };
+
+  // Mouse events
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handlePointerStart(e.clientX);
+  };
+
+  // Touch events
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    handlePointerStart(e.touches[0].clientX);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    handlePointerMove(e.touches[0].clientX);
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;  // Swipe left to go to next image
-    const isRightSwipe = distance < -50; // Swipe right to go to previous image
+    handlePointerEnd();
+  };
 
-    if (isLeftSwipe && images.length > 1) {
-      nextImage();
-    }
-    if (isRightSwipe && images.length > 1) {
-      prevImage();
+  // Prevent context menu on right click during drag
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if (isDragging) {
+      e.preventDefault();
     }
   };
 
   return (
     <div 
-      className={`aspect-square bg-gray-100 relative overflow-hidden group ${className}`}
+      ref={containerRef}
+      className={`aspect-square bg-gray-100 relative overflow-hidden group select-none ${className}`}
+      onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onContextMenu={handleContextMenu}
+      style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
     >
-      {/* Main Image */}
-      <img 
-        src={images[currentImageIndex] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800"}
-        alt={`${alt} - zdjęcie ${currentImageIndex + 1}`}
-        className="w-full h-full object-cover transition-opacity duration-300"
-        onError={(e) => {
-          e.currentTarget.src = "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800";
+      {/* Images Container */}
+      <div 
+        className="flex h-full transition-transform duration-300 ease-out"
+        style={{ 
+          transform: `translateX(${getTransformOffset()}%)`,
+          transitionDuration: isDragging ? '0ms' : '300ms'
         }}
-        draggable={false}
-      />
+      >
+        {images.map((image, index) => (
+          <div key={index} className="w-full h-full flex-shrink-0">
+            <img 
+              src={image || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800"}
+              alt={`${alt} - zdjęcie ${index + 1}`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800";
+              }}
+              draggable={false}
+            />
+          </div>
+        ))}
+      </div>
 
       {/* UI Elements - Only show if there are multiple images */}
       {images.length > 1 && (
         <>
           {/* Image Counter */}
-          <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
+          <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10 pointer-events-none">
             {currentImageIndex + 1} / {images.length}
           </div>
 
@@ -117,6 +207,7 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
                   e.stopPropagation();
                   goToImage(index);
                 }}
+                style={{ cursor: 'pointer' }}
               />
             ))}
           </div>
