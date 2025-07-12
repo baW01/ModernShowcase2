@@ -5,6 +5,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
 import { useEffect, useState } from "react";
 import { ContactModal } from "./contact-modal";
+import { ImageGallery } from "./image-gallery";
 
 interface ProductCardProps {
   product: Product;
@@ -47,13 +48,20 @@ export function ProductCard({ product }: ProductCardProps) {
     setIsContactModalOpen(true);
   };
 
+  // Prepare images array for gallery
+  const images = product.imageUrls && product.imageUrls.length > 0 
+    ? product.imageUrls 
+    : product.imageUrl 
+      ? [product.imageUrl] 
+      : [];
+
   return (
     <div className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group ${product.isSold ? 'opacity-75' : ''}`}>
-      <div className="aspect-square bg-gray-100 relative overflow-hidden">
-        <img 
-          src={product.imageUrl || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800"} 
+      <div className="relative">
+        <ImageGallery 
+          images={images}
           alt={product.title}
-          className={`w-full h-full object-cover transition-transform duration-300 ${!product.isSold ? 'group-hover:scale-105' : ''}`}
+          className={`transition-transform duration-300 ${!product.isSold ? 'group-hover:scale-105' : ''}`}
         />
         {product.isSold && (
           <div className="absolute inset-0 bg-black bg-opacity-20"></div>

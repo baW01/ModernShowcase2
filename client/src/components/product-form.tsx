@@ -14,7 +14,7 @@ import { queryClient } from "@/lib/queryClient";
 import { insertProductSchema } from "@shared/schema";
 import type { InsertProduct, Category } from "@shared/schema";
 import { z } from "zod";
-import { ImageUploadDropzone } from "./image-upload-dropzone";
+import { MultipleImageUpload } from "./multiple-image-upload";
 
 const formSchema = insertProductSchema.extend({
   price: z.number().min(0.01, "Price must be greater than 0"),
@@ -23,7 +23,7 @@ const formSchema = insertProductSchema.extend({
 type FormData = z.infer<typeof formSchema>;
 
 export function ProductForm() {
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const { toast } = useToast();
 
   const { data: categories = [] } = useQuery<Category[]>({
@@ -38,6 +38,7 @@ export function ProductForm() {
       price: 0,
       category: "",
       imageUrl: "",
+      imageUrls: [],
       contactPhone: "",
       isSold: false,
     },
@@ -56,7 +57,7 @@ export function ProductForm() {
         description: "Produkt został utworzony pomyślnie",
       });
       form.reset();
-      setImageUrl("");
+      setImageUrls([]);
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
     },
     onError: (error) => {
@@ -72,14 +73,19 @@ export function ProductForm() {
     const productData: InsertProduct = {
       ...data,
       price: Math.round(data.price * 100), // Convert to cents
-      imageUrl: imageUrl || null,
+      imageUrl: imageUrls.length > 0 ? imageUrls[0] : null,
+      imageUrls: imageUrls,
     };
     createProductMutation.mutate(productData);
   };
 
-  const handleImageUpload = (url: string) => {
-    setImageUrl(url);
-    form.setValue("imageUrl", url);
+  const handleImagesUpload = (urls: string[]) => {
+    setImageUrls(urls);
+    form.setValue("imageUrls", urls);
+    // Set the first image as the primary image for backward compatibility
+    if (urls.length > 0) {
+      form.setValue("imageUrl", urls[0]);
+    }
   };
 
   return (
@@ -190,10 +196,11 @@ export function ProductForm() {
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Zdjęcie produktu</label>
-              <ImageUploadDropzone 
-                onImageUpload={handleImageUpload}
-                currentImageUrl={imageUrl}
+              <label className="block text-sm font-medium text-gray-700 mb-2">Zdjęcia produktu</label>
+              <MultipleImageUpload 
+                onImagesUpload={handleImagesUpload}
+                currentImageUrls={imageUrls}
+                maxImages={5}
               />
             </div>
 
@@ -203,7 +210,7 @@ export function ProductForm() {
                 variant="outline" 
                 onClick={() => {
                   form.reset();
-                  setImageUrl("");
+                  setImageUrls([]);
                 }}
               >
                 Anuluj

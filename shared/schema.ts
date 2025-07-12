@@ -19,6 +19,7 @@ export const products = pgTable("products", {
   categoryId: integer("category_id").references(() => categories.id),
   category: text("category").notNull(), // Keep for backward compatibility
   imageUrl: text("image_url"),
+  imageUrls: text("image_urls").array(),
   contactPhone: text("contact_phone"), // Individual contact phone for each product
   isSold: boolean("is_sold").notNull().default(false),
   views: integer("views").notNull().default(0),

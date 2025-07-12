@@ -14,7 +14,7 @@ import { queryClient } from "@/lib/queryClient";
 import { insertProductSchema } from "@shared/schema";
 import type { Product, InsertProduct } from "@shared/schema";
 import { z } from "zod";
-import { ImageUploadDropzone } from "./image-upload-dropzone";
+import { MultipleImageUpload } from "./multiple-image-upload";
 
 const formSchema = insertProductSchema.extend({
   price: z.number().min(0.01, "Price must be greater than 0"),
@@ -29,7 +29,7 @@ interface EditProductModalProps {
 }
 
 export function EditProductModal({ product, isOpen, onClose }: EditProductModalProps) {
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const { toast } = useToast();
 
   const form = useForm<FormData>({
@@ -40,6 +40,7 @@ export function EditProductModal({ product, isOpen, onClose }: EditProductModalP
       price: 0,
       category: "",
       imageUrl: "",
+      imageUrls: [],
       contactPhone: "",
       isSold: false,
     },
@@ -47,16 +48,23 @@ export function EditProductModal({ product, isOpen, onClose }: EditProductModalP
 
   useEffect(() => {
     if (product) {
+      const productImages = product.imageUrls && product.imageUrls.length > 0 
+        ? product.imageUrls 
+        : product.imageUrl 
+          ? [product.imageUrl] 
+          : [];
+      
       form.reset({
         title: product.title,
         description: product.description,
         price: product.price / 100, // Convert from cents
         category: product.category,
         imageUrl: product.imageUrl || "",
+        imageUrls: productImages,
         contactPhone: product.contactPhone || "",
         isSold: product.isSold,
       });
-      setImageUrl(product.imageUrl || "");
+      setImageUrls(productImages);
     }
   }, [product, form]);
 
@@ -89,14 +97,19 @@ export function EditProductModal({ product, isOpen, onClose }: EditProductModalP
     const productData: Partial<InsertProduct> = {
       ...data,
       price: Math.round(data.price * 100), // Convert to cents
-      imageUrl: imageUrl || null,
+      imageUrl: imageUrls.length > 0 ? imageUrls[0] : null,
+      imageUrls: imageUrls,
     };
     updateProductMutation.mutate(productData);
   };
 
-  const handleImageUpload = (url: string) => {
-    setImageUrl(url);
-    form.setValue("imageUrl", url);
+  const handleImagesUpload = (urls: string[]) => {
+    setImageUrls(urls);
+    form.setValue("imageUrls", urls);
+    // Set the first image as the primary image for backward compatibility
+    if (urls.length > 0) {
+      form.setValue("imageUrl", urls[0]);
+    }
   };
 
   if (!product) return null;
@@ -212,10 +225,11 @@ export function EditProductModal({ product, isOpen, onClose }: EditProductModalP
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Zdjęcie produktu</label>
-              <ImageUploadDropzone 
-                onImageUpload={handleImageUpload}
-                currentImageUrl={imageUrl}
+              <label className="block text-sm font-medium text-gray-700 mb-2">Zdjęcia produktu</label>
+              <MultipleImageUpload 
+                onImagesUpload={handleImagesUpload}
+                currentImageUrls={imageUrls}
+                maxImages={5}
               />
             </div>
 
