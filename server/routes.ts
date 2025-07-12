@@ -262,6 +262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: request.price,
         category: request.category,
         imageUrl: request.imageUrl,
+        imageUrls: request.imageUrls,
         contactPhone: request.contactPhone,
         submitterEmail: request.submitterEmail, // Store submitter email for delete requests
       };
