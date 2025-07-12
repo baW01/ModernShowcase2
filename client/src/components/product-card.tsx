@@ -123,19 +123,29 @@ export function ProductCard({ product }: ProductCardProps) {
           </Badge>
         </div>
       </div>
-      <div className="p-4">
-        <h4 className={`font-semibold mb-2 ${product.isSold ? 'text-sold' : 'text-text'}`}>
+      <div className="p-3 sm:p-4">
+        <h4 className={`font-semibold text-sm sm:text-base mb-2 ${product.isSold ? 'text-sold' : 'text-text'}`} style={{
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 2,
+          overflow: 'hidden'
+        }}>
           {product.title}
         </h4>
-        <p className={`text-sm mb-3 ${product.isSold ? 'text-gray-500' : 'text-gray-600'}`}>
+        <p className={`text-xs sm:text-sm mb-3 ${product.isSold ? 'text-gray-500' : 'text-gray-600'}`} style={{
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 2,
+          overflow: 'hidden'
+        }}>
           {product.description}
         </p>
         <div className="flex items-center justify-between mb-3">
-          <span className={`text-2xl font-bold ${product.isSold ? 'text-sold' : 'text-primary'}`}>
+          <span className={`text-lg sm:text-2xl font-bold ${product.isSold ? 'text-sold' : 'text-primary'}`}>
             {formatPrice(product.price)}
           </span>
           {/* Statistics */}
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          <div className="flex items-center gap-2 sm:gap-3 text-xs text-gray-500">
             <div className="flex items-center gap-1">
               <Eye className="h-3 w-3" />
               <span>{product.views || 0}</span>
@@ -146,42 +156,44 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           </div>
         </div>
-        <div className="flex justify-between items-center">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-0">
+          <div className="flex gap-1 sm:gap-2 flex-1">
             <Button 
               onClick={handleViewProduct}
               variant="outline"
               size="sm"
+              className="flex-1 text-xs sm:text-sm px-2 sm:px-3"
             >
-              <ExternalLink className="mr-2 h-4 w-4" />
+              <ExternalLink className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               Zobacz
             </Button>
             <Button 
               onClick={handleShare}
               variant="ghost"
               size="sm"
+              className="px-2 sm:px-3"
             >
-              <Share className="h-4 w-4" />
+              <Share className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
           
-          <div>
+          <div className="flex-1 sm:flex-none">
             {product.isSold ? (
               <Button 
                 disabled 
-                className="bg-gray-400 text-white cursor-not-allowed"
+                className="bg-gray-400 text-white cursor-not-allowed w-full sm:w-auto text-xs sm:text-sm px-2 sm:px-3"
                 size="sm"
               >
-                <Check className="mr-2 h-4 w-4" />
+                <Check className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 Sprzedane
               </Button>
             ) : (
               <Button 
                 onClick={handleContact}
-                className="bg-accent hover:bg-orange-600 text-white"
+                className="bg-accent hover:bg-orange-600 text-white w-full sm:w-auto text-xs sm:text-sm px-2 sm:px-3"
                 size="sm"
               >
-                <Phone className="mr-2 h-4 w-4" />
+                <Phone className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 Kontakt
               </Button>
             )}

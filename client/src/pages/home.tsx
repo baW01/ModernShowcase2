@@ -191,7 +191,7 @@ export default function Home() {
                 <p className="text-gray-500">Nie znaleziono dostępnych produktów.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {availableProducts.map(product => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -207,7 +207,7 @@ export default function Home() {
                 <p className="text-gray-600">Niedawno sprzedane produkty</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {soldProducts.map(product => (
                   <ProductCard key={product.id} product={product} />
                 ))}
