@@ -94,35 +94,9 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
         draggable={false}
       />
 
-      {/* Navigation Arrows - Only show if there are multiple images */}
+      {/* UI Elements - Only show if there are multiple images */}
       {images.length > 1 && (
         <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-70 hover:opacity-100 transition-opacity z-10"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              prevImage();
-            }}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-70 hover:opacity-100 transition-opacity z-10"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              nextImage();
-            }}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-
           {/* Image Counter */}
           <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
             {currentImageIndex + 1} / {images.length}
