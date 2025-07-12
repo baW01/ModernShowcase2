@@ -141,7 +141,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.description}
         </p>
         <div className="flex items-center justify-between mb-3">
-          <span className={`text-lg sm:text-2xl font-bold ${product.isSold ? 'text-sold' : 'text-primary'}`}>
+          <span className={`text-base sm:text-xl font-bold ${product.isSold ? 'text-sold' : 'text-primary'}`}>
             {formatPrice(product.price)}
           </span>
           {/* Statistics */}
