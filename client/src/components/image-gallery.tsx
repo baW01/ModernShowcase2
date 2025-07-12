@@ -10,6 +10,8 @@ interface ImageGalleryProps {
 
 export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // If no images or only one image, show single image
   if (!images || images.length === 0) {
@@ -31,6 +33,7 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
           src={images[0] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800"}
           alt={alt}
           className="w-full h-full object-cover"
+          draggable={false}
         />
       </div>
     );
@@ -48,8 +51,38 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
     setCurrentImageIndex(index);
   };
 
+  // Handle touch events for swiping
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;  // Swipe left to go to next image
+    const isRightSwipe = distance < -50; // Swipe right to go to previous image
+
+    if (isLeftSwipe && images.length > 1) {
+      nextImage();
+    }
+    if (isRightSwipe && images.length > 1) {
+      prevImage();
+    }
+  };
+
   return (
-    <div className={`aspect-square bg-gray-100 relative overflow-hidden group ${className}`}>
+    <div 
+      className={`aspect-square bg-gray-100 relative overflow-hidden group ${className}`}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Main Image */}
       <img 
         src={images[currentImageIndex] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800"}
@@ -58,6 +91,7 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
         onError={(e) => {
           e.currentTarget.src = "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800";
         }}
+        draggable={false}
       />
 
       {/* Navigation Arrows - Only show if there are multiple images */}
