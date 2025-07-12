@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertProductSchema, insertSettingsSchema, insertProductRequestSchema, insertCategorySchema } from "@shared/schema";
 import { z } from "zod";
 import { generateToken, verifyPassword, authenticateToken, requireAdmin, authRateLimitConfig } from "./auth";
+import { validateProductToken } from "./hash-utils";
 import rateLimit from "express-rate-limit";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -528,6 +529,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch product stats" });
+    }
+  });
+
+  // Token validation endpoint for secure delete requests
+  app.get("/api/validate-token/:token", async (req, res) => {
+    try {
+      const token = req.params.token;
+      const productId = validateProductToken(token);
+      
+      if (!productId) {
+        return res.status(400).json({ 
+          valid: false, 
+          message: "Invalid or expired token" 
+        });
+      }
+      
+      // Check if product still exists
+      const product = await storage.getProduct(productId);
+      if (!product) {
+        return res.status(404).json({ 
+          valid: false, 
+          message: "Product not found" 
+        });
+      }
+      
+      // Return minimal product info for validation
+      res.json({
+        valid: true,
+        productId: productId,
+        productTitle: product.title
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        valid: false, 
+        message: "Token validation failed" 
+      });
     }
   });
 

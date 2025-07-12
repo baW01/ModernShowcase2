@@ -1,4 +1,5 @@
 import sgMail from '@sendgrid/mail';
+import { generateDeleteRequestToken } from './hash-utils.js';
 
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
@@ -66,9 +67,12 @@ export function generateApprovalEmailHtml(productTitle: string, productId: numbe
   console.log(`First domain: "${firstDomain}"`);
   
   const baseUrl = firstDomain ? `https://${firstDomain}` : 'http://localhost:5000';
-  const deleteUrl = `${baseUrl}/delete-request?productId=${productId}`;
   
-  console.log(`Final generated delete URL: ${deleteUrl}`);
+  // Generate secure token instead of using plain product ID
+  const secureToken = generateDeleteRequestToken(productId);
+  const deleteUrl = `${baseUrl}/delete-request?token=${secureToken}`;
+  
+  console.log(`Final generated delete URL with secure token: ${deleteUrl}`);
   
   return `
     <!DOCTYPE html>
