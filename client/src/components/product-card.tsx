@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Phone, Check, Eye } from "lucide-react";
+import { Phone, Check, Eye, Share, ExternalLink } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
 import { useEffect, useState } from "react";
 import { ContactModal } from "./contact-modal";
 import { ImageGallery } from "./image-gallery";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +15,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
   
   // Track view when component mounts
   useEffect(() => {
@@ -46,6 +50,50 @@ export function ProductCard({ product }: ProductCardProps) {
     
     // Open contact modal
     setIsContactModalOpen(true);
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const productUrl = `${window.location.origin}/product/${product.id}`;
+    const shareData = {
+      title: product.title,
+      text: `${product.title} - ${formatPrice(product.price)}`,
+      url: productUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        // User cancelled share or error occurred
+        copyToClipboard(productUrl);
+      }
+    } else {
+      copyToClipboard(productUrl);
+    }
+  };
+
+  const copyToClipboard = (url: string) => {
+    navigator.clipboard.writeText(url).then(() => {
+      toast({
+        title: "Link skopiowany!",
+        description: "Link do produktu został skopiowany do schowka.",
+      });
+    }).catch(() => {
+      toast({
+        title: "Błąd",
+        description: "Nie udało się skopiować linku.",
+        variant: "destructive",
+      });
+    });
+  };
+
+  const handleViewProduct = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLocation(`/product/${product.id}`);
   };
 
   // Prepare images array for gallery
@@ -98,26 +146,46 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           </div>
         </div>
-        <div className="flex justify-end">
-          {product.isSold ? (
+        <div className="flex justify-between items-center">
+          <div className="flex gap-2">
             <Button 
-              disabled 
-              className="bg-gray-400 text-white cursor-not-allowed"
+              onClick={handleViewProduct}
+              variant="outline"
               size="sm"
             >
-              <Check className="mr-2 h-4 w-4" />
-              Sprzedane
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Zobacz
             </Button>
-          ) : (
             <Button 
-              onClick={handleContact}
-              className="bg-accent hover:bg-orange-600 text-white"
+              onClick={handleShare}
+              variant="ghost"
               size="sm"
             >
-              <Phone className="mr-2 h-4 w-4" />
-              Kontakt
+              <Share className="h-4 w-4" />
             </Button>
-          )}
+          </div>
+          
+          <div>
+            {product.isSold ? (
+              <Button 
+                disabled 
+                className="bg-gray-400 text-white cursor-not-allowed"
+                size="sm"
+              >
+                <Check className="mr-2 h-4 w-4" />
+                Sprzedane
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleContact}
+                className="bg-accent hover:bg-orange-600 text-white"
+                size="sm"
+              >
+                <Phone className="mr-2 h-4 w-4" />
+                Kontakt
+              </Button>
+            )}
+          </div>
         </div>
       </div>
       

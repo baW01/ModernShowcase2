@@ -5,6 +5,66 @@ import { insertProductSchema, insertSettingsSchema, insertProductRequestSchema, 
 import { z } from "zod";
 import { generateToken, verifyPassword, authenticateToken, requireAdmin, authRateLimitConfig } from "./auth";
 import rateLimit from "express-rate-limit";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+interface HTMLMetaTags {
+  title: string;
+  description: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: string;
+  ogUrl: string;
+  ogPrice?: string;
+  ogCurrency?: string;
+}
+
+function generateHTML(meta: HTMLMetaTags): string {
+  // Read the base HTML template
+  let html: string;
+  try {
+    html = readFileSync(join(process.cwd(), 'client/index.html'), 'utf-8');
+  } catch (error) {
+    // Fallback HTML if file reading fails
+    html = `<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>`;
+  }
+
+  // Add meta tags before the closing head tag
+  const metaTags = `
+    <title>${meta.title}</title>
+    <meta name="description" content="${meta.description}" />
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="${meta.ogTitle}" />
+    <meta property="og:description" content="${meta.ogDescription}" />
+    <meta property="og:type" content="product" />
+    <meta property="og:url" content="${meta.ogUrl}" />
+    <meta property="og:site_name" content="Spotted GFC" />
+    ${meta.ogImage ? `<meta property="og:image" content="${meta.ogImage}" />` : ''}
+    ${meta.ogImage ? `<meta property="og:image:width" content="800" />` : ''}
+    ${meta.ogImage ? `<meta property="og:image:height" content="600" />` : ''}
+    ${meta.ogPrice ? `<meta property="product:price:amount" content="${meta.ogPrice}" />` : ''}
+    ${meta.ogCurrency ? `<meta property="product:price:currency" content="${meta.ogCurrency}" />` : ''}
+    
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${meta.ogTitle}" />
+    <meta name="twitter:description" content="${meta.ogDescription}" />
+    ${meta.ogImage ? `<meta name="twitter:image" content="${meta.ogImage}" />` : ''}
+  `;
+
+  return html.replace('</head>', `${metaTags}</head>`);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create auth rate limiter
@@ -525,6 +585,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Category deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete category" });
+    }
+  });
+
+  // Server-side rendering for product pages with Open Graph meta tags
+  app.get("/product/:id", async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const product = await storage.getProduct(productId);
+      const settings = await storage.getSettings();
+      
+      if (!product) {
+        // Return 404 page with basic meta tags
+        return res.status(404).send(generateHTML({
+          title: "Produkt nie znaleziony | Spotted GFC",
+          description: "Podany produkt nie istnieje lub został usunięty.",
+          ogTitle: "Produkt nie znaleziony",
+          ogDescription: "Podany produkt nie istnieje lub został usunięty.",
+          ogImage: "",
+          ogUrl: `${req.protocol}://${req.get('host')}/product/${productId}`
+        }));
+      }
+
+      // Generate meta tags for the product
+      const title = `${product.title} - ${product.category} | ${settings?.storeName || 'Spotted GFC'}`;
+      const description = `${product.description.substring(0, 155)}... Cena: ${(product.price / 100).toFixed(2)} zł`;
+      const ogImage = product.imageUrls?.[0] || product.imageUrl || '';
+      const ogUrl = `${req.protocol}://${req.get('host')}/product/${productId}`;
+
+      res.send(generateHTML({
+        title,
+        description,
+        ogTitle: product.title,
+        ogDescription: product.description,
+        ogImage,
+        ogUrl,
+        ogPrice: (product.price / 100).toFixed(2),
+        ogCurrency: 'PLN'
+      }));
+    } catch (error) {
+      console.error('Error serving product page:', error);
+      res.status(500).send(generateHTML({
+        title: "Błąd serwera | Spotted GFC",
+        description: "Wystąpił błąd podczas ładowania strony.",
+        ogTitle: "Błąd serwera",
+        ogDescription: "Wystąpił błąd podczas ładowania strony.",
+        ogImage: "",
+        ogUrl: `${req.protocol}://${req.get('host')}/product/${req.params.id}`
+      }));
     }
   });
 

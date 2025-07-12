@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CookieConsent } from "@/components/cookie-consent";
 import Home from "@/pages/home";
+import Product from "@/pages/product";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import Terms from "@/pages/terms";
@@ -15,6 +16,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/product/:id" component={Product} />
       <Route path="/admin" component={Admin} />
       <Route path="/regulamin" component={Terms} />
       <Route path="/polityka-prywatnosci" component={Privacy} />
