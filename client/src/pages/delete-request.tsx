@@ -23,7 +23,8 @@ type DeleteRequestFormData = z.infer<typeof deleteRequestSchema>;
 
 export default function DeleteRequest() {
   const [location] = useLocation();
-  const [productId, setProductId] = useState<string | null>(null);
+  const [productId, setProductId] = useState<number | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
 
@@ -39,17 +40,46 @@ export default function DeleteRequest() {
     console.log('Current location:', location);
     console.log('Window search:', window.location.search);
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // Try to get token first (new secure method)
+    const tokenParam = urlParams.get('token');
+    if (tokenParam) {
+      console.log('Extracted token:', tokenParam);
+      setToken(tokenParam);
+      return;
+    }
+    
+    // Fallback to old productId method for backward compatibility
     const productIdParam = urlParams.get('productId');
-    console.log('Extracted productId:', productIdParam);
-    setProductId(productIdParam);
+    if (productIdParam) {
+      console.log('Extracted productId (legacy):', productIdParam);
+      setProductId(parseInt(productIdParam));
+    }
   }, [location]);
 
-  // Check if product exists
-  const { data: product, isLoading: isLoadingProduct, error: productError } = useQuery({
-    queryKey: ['/api/products', productId],
-    enabled: !!productId,
+  // Validate token and get product info
+  const { data: tokenValidation, isLoading: isValidatingToken, error: tokenError } = useQuery({
+    queryKey: ['/api/validate-token', token],
+    enabled: !!token,
     retry: false,
   });
+
+  // Check if product exists (for legacy productId method)
+  const { data: product, isLoading: isLoadingProduct, error: productError } = useQuery({
+    queryKey: ['/api/products', productId],
+    enabled: !!productId && !token,
+    retry: false,
+  });
+
+  // Determine the actual product data and ID to use
+  const actualProduct = tokenValidation?.valid ? {
+    id: tokenValidation.productId,
+    title: tokenValidation.productTitle
+  } : product;
+  
+  const actualProductId = tokenValidation?.valid ? tokenValidation.productId : productId;
+  const isLoading = token ? isValidatingToken : isLoadingProduct;
+  const hasError = token ? (tokenError || !tokenValidation?.valid) : (productError || !product);
 
   const deleteRequestMutation = useMutation({
     mutationFn: async (data: DeleteRequestFormData & { productId: number }) => {
@@ -75,7 +105,7 @@ export default function DeleteRequest() {
   });
 
   const onSubmit = (data: DeleteRequestFormData) => {
-    if (!productId) {
+    if (!actualProductId) {
       toast({
         title: "Błąd",
         description: "Brak ID produktu",
@@ -86,11 +116,11 @@ export default function DeleteRequest() {
 
     deleteRequestMutation.mutate({
       ...data,
-      productId: parseInt(productId),
+      productId: actualProductId,
     });
   };
 
-  if (!productId) {
+  if (!token && !productId) {
     return (
       <div className="container mx-auto py-8 px-4">
         <Card className="max-w-md mx-auto">
@@ -101,14 +131,14 @@ export default function DeleteRequest() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Nie znaleziono ID produktu. Upewnij się, że używasz prawidłowego linku z emaila.</p>
+            <p>Nie znaleziono parametrów linku. Upewnij się, że używasz prawidłowego linku z emaila.</p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (isLoadingProduct) {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-8 px-4">
         <Card className="max-w-md mx-auto">
@@ -120,21 +150,32 @@ export default function DeleteRequest() {
     );
   }
 
-  if (productError || !product) {
+  if (hasError || !actualProduct) {
     return (
       <div className="container mx-auto py-8 px-4">
         <Card className="max-w-md mx-auto">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-600">
               <Info className="h-5 w-5" />
-              Produkt już nie istnieje
+              {token ? "Nieprawidłowy lub wygasły link" : "Produkt już nie istnieje"}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Produkt o ID {productId} został już usunięty z katalogu. Możliwe że Twoja prośba została już rozpatrzona lub produkt został usunięty przez administratora.</p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Jeśli masz pytania, skontaktuj się z administratorem.
-            </p>
+            {token ? (
+              <div>
+                <p>Link do usunięcia produktu jest nieprawidłowy lub wygasł. Linki są ważne przez 30 dni od momentu zatwierdzenia produktu.</p>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Jeśli potrzebujesz usunąć produkt, skontaktuj się z administratorem.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p>Produkt o ID {actualProductId} został już usunięty z katalogu. Możliwe że Twoja prośba została już rozpatrzona lub produkt został usunięty przez administratora.</p>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Jeśli masz pytania, skontaktuj się z administratorem.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -167,9 +208,9 @@ export default function DeleteRequest() {
             <Trash2 className="h-5 w-5" />
             Prośba o usunięcie produktu
           </CardTitle>
-          {product && (
+          {actualProduct && (
             <p className="text-sm text-muted-foreground">
-              Produkt: <strong>{product.title}</strong>
+              Produkt: <strong>{actualProduct.title}</strong>
             </p>
           )}
         </CardHeader>
