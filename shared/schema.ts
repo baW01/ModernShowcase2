@@ -58,6 +58,7 @@ export const productRequests = pgTable("product_requests", {
   price: integer("price").notNull(), // Store price in cents
   category: text("category").notNull(),
   imageUrl: text("image_url"),
+  imageUrls: text("image_urls").array(),
   contactPhone: text("contact_phone").notNull(),
   submitterName: text("submitter_name").notNull(),
   submitterEmail: text("submitter_email").notNull(), // Now required for email confirmations

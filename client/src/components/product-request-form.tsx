@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertProductRequestSchema, type InsertProductRequest } from "@shared/schema";
-import { ImageUploadDropzone } from "@/components/image-upload-dropzone";
+import { MultipleImageUpload } from "@/components/multiple-image-upload";
 
 const formSchema = insertProductRequestSchema.extend({
   price: insertProductRequestSchema.shape.price.transform((val) => Math.round(val * 100)),
@@ -30,6 +30,7 @@ type FormData = {
   price: number;
   category: string;
   imageUrl?: string;
+  imageUrls?: string[];
   contactPhone: string;
   submitterName: string;
   submitterEmail: string;
@@ -48,6 +49,7 @@ export function ProductRequestForm() {
       price: 0,
       category: "",
       imageUrl: "",
+      imageUrls: [],
       contactPhone: "",
       submitterName: "",
       submitterEmail: "",
@@ -85,7 +87,8 @@ export function ProductRequestForm() {
       description: data.description,
       price: data.price,
       category: data.category,
-      imageUrl: data.imageUrl || "",
+      imageUrl: data.imageUrls && data.imageUrls.length > 0 ? data.imageUrls[0] : (data.imageUrl || ""),
+      imageUrls: data.imageUrls || [],
       contactPhone: data.contactPhone,
       submitterName: data.submitterName,
       submitterEmail: data.submitterEmail || "",
@@ -94,8 +97,12 @@ export function ProductRequestForm() {
     mutation.mutate(productData);
   };
 
-  const handleImageUpload = (url: string) => {
-    form.setValue("imageUrl", url);
+  const handleImagesUpload = (urls: string[]) => {
+    form.setValue("imageUrls", urls);
+    // Set the first image as the primary image for backward compatibility
+    if (urls.length > 0) {
+      form.setValue("imageUrl", urls[0]);
+    }
   };
 
   return (
@@ -245,14 +252,15 @@ export function ProductRequestForm() {
 
             <FormField
               control={form.control}
-              name="imageUrl"
+              name="imageUrls"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Zdjęcie produktu (opcjonalne)</FormLabel>
+                  <FormLabel>Zdjęcia produktu (opcjonalne)</FormLabel>
                   <FormControl>
-                    <ImageUploadDropzone 
-                      onImageUpload={handleImageUpload}
-                      currentImageUrl={field.value}
+                    <MultipleImageUpload 
+                      onImagesUpload={handleImagesUpload}
+                      currentImageUrls={field.value}
+                      maxImages={5}
                     />
                   </FormControl>
                   <FormMessage />
