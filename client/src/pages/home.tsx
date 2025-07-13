@@ -8,6 +8,7 @@ import { ProductRequestForm } from "@/components/product-request-form";
 import { Footer } from "@/components/footer";
 import type { Product, Settings } from "@shared/schema";
 import { useState } from "react";
+import { Link } from "wouter";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,10 +88,12 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center py-4 sm:py-0 sm:h-16 gap-4 sm:gap-0">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-xl font-bold text-primary flex items-center">
-                  <Store className="mr-2 h-6 w-6" />
-                  {settings?.storeName || "ProductHub"}
-                </h1>
+                <Link href="/">
+                  <h1 className="text-xl font-bold text-primary flex items-center cursor-pointer hover:text-primary/80 transition-colors">
+                    <Store className="mr-2 h-6 w-6" />
+                    {settings?.storeName || "ProductHub"}
+                  </h1>
+                </Link>
               </div>
             </div>
             <div className="flex justify-end">

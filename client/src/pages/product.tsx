@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { ImageGallery } from "@/components/image-gallery";
 import { ContactModal } from "@/components/contact-modal";
 import { useState, useEffect } from "react";
-import { Share, ArrowLeft, Phone, Eye } from "lucide-react";
-import { useLocation } from "wouter";
+import { Share, ArrowLeft, Phone, Eye, Store } from "lucide-react";
+import { useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 interface Product {

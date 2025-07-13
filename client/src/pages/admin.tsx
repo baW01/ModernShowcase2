@@ -12,6 +12,7 @@ import { CategoriesManagement } from "@/components/categories-management";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import type { Product, Settings as SettingsType, ProductRequest, DeleteRequest } from "@shared/schema";
 import { useState } from "react";
+import { Link } from "wouter";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("products");
