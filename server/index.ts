@@ -5,6 +5,7 @@ import { testConnection } from "./db";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import compression from "compression";
 import dotenv from "dotenv";
 
 // Load environment variables
@@ -14,6 +15,19 @@ const app = express();
 
 // Trust proxy for rate limiting to work correctly
 app.set('trust proxy', 1);
+
+// Enable compression for all responses (improves loading speed)
+app.use(compression({
+  level: 6, // Balanced compression level
+  threshold: 1024, // Only compress responses larger than 1KB
+  filter: (req, res) => {
+    // Don't compress responses for certain routes
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+}));
 
 // Security middleware
 app.use(helmet({
@@ -51,6 +65,13 @@ app.use('/api/', limiter);
 // Increase payload limit for image uploads (50MB)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+// Cache static assets for better performance
+app.use(express.static('public', {
+  maxAge: '1y',
+  etag: true,
+  lastModified: true,
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();

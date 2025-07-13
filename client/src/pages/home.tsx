@@ -3,7 +3,7 @@ import { Search, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ProductCard } from "@/components/product-card";
+import { LazyProductCard } from "@/components/lazy-product-card";
 import { ProductRequestForm } from "@/components/product-request-form";
 import { Footer } from "@/components/footer";
 import type { Product, Settings } from "@shared/schema";
@@ -195,8 +195,8 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {availableProducts.map(product => (
-                  <ProductCard key={product.id} product={product} />
+                {availableProducts.map((product, index) => (
+                  <LazyProductCard key={product.id} product={product} index={index} />
                 ))}
               </div>
             )}
@@ -211,8 +211,8 @@ export default function Home() {
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {soldProducts.map(product => (
-                  <ProductCard key={product.id} product={product} />
+                {soldProducts.map((product, index) => (
+                  <LazyProductCard key={product.id} product={product} index={index + availableProducts.length} />
                 ))}
               </div>
             </div>

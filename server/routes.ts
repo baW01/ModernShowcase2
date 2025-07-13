@@ -123,12 +123,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrls: product.imageUrls,
         contactPhone: product.contactPhone,
         isSold: product.isSold,
+        saleVerified: product.saleVerified,
         views: product.views,
         clicks: product.clicks,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt
         // submitterEmail removed for privacy
       }));
+      
+      // Add cache headers for better performance
+      res.set({
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600', // 5 minutes cache
+        'ETag': `"products-${Date.now()}"`,
+        'Last-Modified': new Date().toUTCString()
+      });
       
       res.json(publicProducts);
     } catch (error) {
@@ -158,12 +166,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrls: product.imageUrls,
         contactPhone: product.contactPhone,
         isSold: product.isSold,
+        saleVerified: product.saleVerified,
         views: product.views,
         clicks: product.clicks,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt
         // submitterEmail removed for privacy
       };
+      
+      // Add cache headers for single product
+      res.set({
+        'Cache-Control': 'public, max-age=600, stale-while-revalidate=1800', // 10 minutes cache
+        'ETag': `"product-${product.id}-${product.updatedAt}"`,
+        'Last-Modified': new Date(product.updatedAt).toUTCString()
+      });
       
       res.json(publicProduct);
     } catch (error) {

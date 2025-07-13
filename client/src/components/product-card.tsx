@@ -18,7 +18,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
-  // Track view when component mounts
+  // Track view when component mounts (debounced)
   useEffect(() => {
     const trackView = async () => {
       try {
@@ -30,7 +30,10 @@ export function ProductCard({ product }: ProductCardProps) {
         // Ignore errors, don't block view
       }
     };
-    trackView();
+    
+    // Debounce view tracking to prevent excessive API calls
+    const timer = setTimeout(trackView, 500);
+    return () => clearTimeout(timer);
   }, [product.id]);
 
   const formatPrice = (priceInCents: number) => {

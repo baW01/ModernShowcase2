@@ -109,6 +109,19 @@ The application is structured as a monorepo with shared types and schemas, makin
 ## Recent Changes
 
 ### Latest modifications with dates (July 13, 2025)
+- **Performance Optimization and Loading Speed Improvements** (Late Evening, July 13, 2025)
+  - Implemented lazy loading for product images with `loading="lazy"` attribute for better initial page load
+  - Created LazyProductCard component with intersection observer for viewport-based loading
+  - Added performance-optimized image component with preloading and responsive srcset
+  - Implemented server-side compression middleware (gzip) to reduce response sizes
+  - Added HTTP caching headers to API endpoints (5-10 minute cache with stale-while-revalidate)
+  - Optimized TanStack Query cache settings (10 min stale time, 30 min cache retention)
+  - Added debounced view tracking to reduce excessive API calls
+  - Created performance monitoring utilities with debounce, throttle, and API batching
+  - Implemented static asset caching with 1-year max-age for better browser caching
+  - Added database optimization indexes for frequently queried columns
+  - Created adaptive image quality based on connection speed detection
+
 - **Updated Domain Configuration and Simplified Delete Requests** (Evening, July 13, 2025)
   - Configured all email links and Open Graph URLs to use custom domain https://spottedgfc.pl
   - Removed email requirement from delete request forms when using secure tokens from emails
