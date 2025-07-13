@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, Eye, Trash2, Package } from "lucide-react";
+import { Check, X, Eye, Trash2, Package, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageGallery } from "@/components/image-gallery";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProductRequest } from "@shared/schema";
@@ -16,6 +17,7 @@ interface ProductRequestsTableProps {
 
 export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProductRequest | null>(null);
+  const [viewingImages, setViewingImages] = useState<ProductRequest | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -105,6 +107,20 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
     });
   };
 
+  const handleViewImages = (request: ProductRequest) => {
+    setViewingImages(request);
+  };
+
+  const getRequestImages = (request: ProductRequest): string[] => {
+    if (request.imageUrls && request.imageUrls.length > 0) {
+      return request.imageUrls;
+    }
+    if (request.imageUrl) {
+      return [request.imageUrl];
+    }
+    return [];
+  };
+
   const confirmApproval = () => {
     if (selectedRequest) {
       updateStatusMutation.mutate({
@@ -160,6 +176,7 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
               <TableHead>Produkt</TableHead>
               <TableHead>Kategoria</TableHead>
               <TableHead>Cena</TableHead>
+              <TableHead>Zdjęcia</TableHead>
               <TableHead>Zgłaszający</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Data zgłoszenia</TableHead>
@@ -177,6 +194,20 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
                 </TableCell>
                 <TableCell>{request.category}</TableCell>
                 <TableCell>{formatPrice(request.price)}</TableCell>
+                <TableCell>
+                  {getRequestImages(request).length > 0 ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleViewImages(request)}
+                    >
+                      <Image className="h-4 w-4 mr-1" />
+                      {getRequestImages(request).length} zdjęć
+                    </Button>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Brak zdjęć</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <div>{request.submitterName}</div>
                   <div className="text-sm text-muted-foreground">{request.contactPhone}</div>
@@ -257,6 +288,35 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
                 </Button>
                 <Button onClick={confirmApproval} disabled={updateStatusMutation.isPending}>
                   Zatwierdź
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!viewingImages} onOpenChange={() => setViewingImages(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Zdjęcia produktu: {viewingImages?.title}</DialogTitle>
+          </DialogHeader>
+          {viewingImages && (
+            <div className="space-y-4">
+              <div className="aspect-square max-h-96">
+                <ImageGallery 
+                  images={getRequestImages(viewingImages)}
+                  alt={viewingImages.title}
+                  className="rounded-lg"
+                />
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  {getRequestImages(viewingImages).length} {getRequestImages(viewingImages).length === 1 ? 'zdjęcie' : 'zdjęć'}
+                </p>
+              </div>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setViewingImages(null)}>
+                  Zamknij
                 </Button>
               </div>
             </div>
