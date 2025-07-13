@@ -76,7 +76,7 @@ export function Footer() {
 
         <div className="border-t border-gray-200 mt-8 pt-8 text-center">
           <p className="text-gray-600">
-            © 2024 SpottedGFC. Wszystkie prawa zastrzeżone. 
+            © 2025 SpottedGFC. Wszystkie prawa zastrzeżone. 
             <span className="mx-2">•</span>
             <a 
               href="https://suppi.pl" 

@@ -103,7 +103,7 @@ export function generateApprovalEmailHtml(productTitle: string, productId: numbe
         </div>
         <div class="footer">
           <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
-          <p>© 2024 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
+          <p>© 2025 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
         </div>
       </div>
     </body>
@@ -143,7 +143,7 @@ export function generateDeleteRequestEmailHtml(productTitle: string, reason?: st
         </div>
         <div class="footer">
           <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
-          <p>© 2024 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
+          <p>© 2025 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
         </div>
       </div>
     </body>
