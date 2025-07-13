@@ -48,8 +48,9 @@ const limiter = rateLimit({
 
 app.use('/api/', limiter);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Increase payload limit for image uploads (50MB)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 app.use((req, res, next) => {
   const start = Date.now();

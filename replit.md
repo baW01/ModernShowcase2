@@ -108,6 +108,16 @@ The application is structured as a monorepo with shared types and schemas, makin
 
 ## Recent Changes
 
+### Latest modifications with dates (July 13, 2025)
+- **Enhanced Image Upload with Compression and Immediate Upload** (Afternoon, July 13, 2025)
+  - Added automatic image compression for files over 10MB down to 5MB with quality preservation
+  - Implemented individual loading indicators (spinning circles) for each image during upload
+  - Created immediate image upload functionality - images are uploaded to server as soon as selected
+  - Added `/api/upload-image` endpoint for real-time image processing
+  - Increased server payload limit to 50MB to handle large image uploads before compression
+  - Enhanced user feedback with compression notifications and progress indicators
+  - Updated both single and multiple image upload components with new functionality
+
 ### Latest modifications with dates (July 12, 2025)
 - **Implemented Multiple Image Upload Support and Touch Gallery Navigation** (Evening, July 12, 2025)
   - Added MultipleImageUpload component supporting up to 5 images per product

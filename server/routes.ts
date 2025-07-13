@@ -256,6 +256,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Image upload endpoint - PUBLIC endpoint for immediate image processing
+  app.post("/api/upload-image", async (req, res) => {
+    try {
+      const { imageData } = req.body;
+      
+      if (!imageData || typeof imageData !== 'string') {
+        return res.status(400).json({ message: "No image data provided" });
+      }
+
+      // Validate that it's a valid base64 data URL
+      if (!imageData.startsWith('data:image/')) {
+        return res.status(400).json({ message: "Invalid image format" });
+      }
+
+      // For now, we just return the same data URL
+      // In a real application, you might want to:
+      // 1. Save to cloud storage (AWS S3, Cloudinary, etc.)
+      // 2. Optimize the image further
+      // 3. Generate different sizes/thumbnails
+      
+      res.json({ 
+        imageUrl: imageData,
+        message: "Image uploaded successfully"
+      });
+    } catch (error) {
+      console.error('Image upload error:', error);
+      res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
+
   // Get all product requests - ADMIN ONLY
   app.get("/api/product-requests", authenticateToken, requireAdmin, async (req, res) => {
     try {

@@ -145,8 +145,35 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
         });
       }
       
-      setPreviewUrl(finalDataUrl);
-      onImageUpload(finalDataUrl);
+      // Upload to server immediately
+      try {
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageData: finalDataUrl }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const result = await response.json();
+        setPreviewUrl(result.imageUrl);
+        onImageUpload(result.imageUrl);
+      } catch (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        // Fallback to local base64 if upload fails
+        setPreviewUrl(finalDataUrl);
+        onImageUpload(finalDataUrl);
+        
+        toast({
+          title: "Ostrzeżenie",
+          description: "Zdjęcie zostało załadowane lokalnie. Spróbuj ponownie jeśli problem się powtarza.",
+          variant: "destructive",
+        });
+      }
       
     } catch (error) {
       console.error('Error processing image:', error);

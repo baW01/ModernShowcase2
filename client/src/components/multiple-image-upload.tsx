@@ -169,7 +169,27 @@ export function MultipleImageUpload({
           });
         }
         
-        newUrls.push(finalDataUrl);
+        // Upload to server immediately
+        try {
+          const response = await fetch('/api/upload-image', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ imageData: finalDataUrl }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Upload failed');
+          }
+
+          const result = await response.json();
+          newUrls.push(result.imageUrl);
+        } catch (uploadError) {
+          console.error('Error uploading image:', uploadError);
+          // Fallback to local base64 if upload fails
+          newUrls.push(finalDataUrl);
+        }
         
         // Remove from uploading set
         setUploadingFiles(prev => {
