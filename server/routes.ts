@@ -232,11 +232,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Verify sale - ADMIN ONLY  
-  app.put("/api/products/:id/verify-sale", authenticateToken, requireAdmin, async (req, res) => {
+  // Verify sale - PUBLIC endpoint with token validation
+  app.put("/api/products/:id/verify-sale", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { comment } = req.body;
+      const { comment, token } = req.body;
+      
+      // Validate that the token corresponds to this product
+      if (!token) {
+        return res.status(400).json({ message: "Token is required" });
+      }
+      
+      const tokenProductId = validateProductToken(token);
+      
+      if (!tokenProductId || tokenProductId !== id) {
+        return res.status(403).json({ message: "Invalid or expired token for this product" });
+      }
       
       const product = await storage.verifySale(id, comment);
       
@@ -246,6 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(product);
     } catch (error) {
+      console.error('Sale verification error:', error);
       res.status(500).json({ message: "Failed to verify sale" });
     }
   });

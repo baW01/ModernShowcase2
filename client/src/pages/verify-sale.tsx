@@ -15,13 +15,14 @@ export default function VerifySale() {
   const [comment, setComment] = useState("");
   const [productTitle, setProductTitle] = useState("");
   const [productId, setProductId] = useState<number | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     // Get token from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    const urlToken = urlParams.get('token');
     
-    if (!token) {
+    if (!urlToken) {
       toast({
         title: "Błąd",
         description: "Nieprawidłowy lub brakujący token",
@@ -31,8 +32,9 @@ export default function VerifySale() {
       return;
     }
 
+    setToken(urlToken);
     // Validate token and get product info
-    validateToken(token);
+    validateToken(urlToken);
   }, [toast, setLocation]);
 
   const validateToken = async (token: string) => {
@@ -85,7 +87,10 @@ export default function VerifySale() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ comment: comment.trim() || undefined }),
+        body: JSON.stringify({ 
+          comment: comment.trim() || undefined,
+          token: token 
+        }),
       });
 
       if (!response.ok) {
