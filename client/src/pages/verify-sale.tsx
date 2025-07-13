@@ -100,7 +100,7 @@ export default function VerifySale() {
       setIsSubmitted(true);
       toast({
         title: "Sukces",
-        description: "Sprzedaż została zweryfikowana",
+        description: "Produkt został oznaczony jako sprzedany i zweryfikowany",
       });
     } catch (error) {
       toast({
@@ -134,9 +134,9 @@ export default function VerifySale() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <CardTitle className="text-green-600">Sprzedaż zweryfikowana!</CardTitle>
+            <CardTitle className="text-green-600">Produkt oznaczony jako sprzedany!</CardTitle>
             <CardDescription>
-              Dziękujemy za potwierdzenie sprzedaży produktu "{productTitle}".
+              Dziękujemy za potwierdzenie sprzedaży produktu "{productTitle}". Produkt jest teraz oznaczony jako sprzedany i zweryfikowany.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -182,7 +182,7 @@ export default function VerifySale() {
                 <AlertCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-blue-700">
                   <p className="font-medium mb-1">Co się stanie?</p>
-                  <p>Produkt zostanie oznaczony jako zweryfikowana sprzedaż i będzie widoczny z ikoną potwierdzenia dla innych użytkowników.</p>
+                  <p>Produkt zostanie oznaczony jako sprzedany i zweryfikowany. Będzie widoczny z zieloną ikoną potwierdzenia dla innych użytkowników.</p>
                 </div>
               </div>
             </div>

@@ -109,6 +109,15 @@ The application is structured as a monorepo with shared types and schemas, makin
 ## Recent Changes
 
 ### Latest modifications with dates (July 13, 2025)
+- **Implemented Sale Verification System** (Evening, July 13, 2025)
+  - Added sale verification functionality allowing product owners to mark items as sold directly from emails
+  - Created secure token-based system for sale confirmation without admin intervention
+  - Implemented `/verify-sale` page with optional comment field for sale details
+  - Added green "Zweryfikowane" badge display on product cards for verified sales
+  - Enhanced email templates with "Oznacz jako sprzedane" button alongside delete request button
+  - Products marked as sold via email automatically become both sold and verified
+  - Simplified workflow: Admin approves → Email sent → Owner clicks "Sprzedane" → Product marked as sold & verified
+
 - **Enhanced Image Upload with Compression and Immediate Upload** (Afternoon, July 13, 2025)
   - Added automatic image compression for files over 10MB down to 5MB with quality preservation
   - Implemented individual loading indicators (spinning circles) for each image during upload

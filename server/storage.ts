@@ -147,6 +147,7 @@ export class DatabaseStorage implements IStorage {
       const [updatedProduct] = await db
         .update(products)
         .set({
+          isSold: true,
           saleVerified: true,
           saleVerificationComment: comment || null,
           saleVerifiedAt: new Date()

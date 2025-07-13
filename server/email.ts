@@ -99,11 +99,11 @@ export function generateApprovalEmailHtml(productTitle: string, productId: numbe
           <p>Mamy miłą wiadomość - Twój produkt "<strong>${productTitle}</strong>" został zatwierdzony przez administratora i jest już dostępny w naszym katalogu.</p>
           
           <h3>Co dalej?</h3>
-          <p>Twój produkt jest teraz widoczny dla wszystkich odwiedzających. Jeśli chcesz go usunąć, możesz to zrobić klikając przycisk poniżej:</p>
+          <p>Twój produkt jest teraz widoczny dla wszystkich odwiedzających. Gdy sprzedasz produkt, kliknij przycisk "Sprzedane" aby oznaczyć go jako sprzedany. Jeśli chcesz usunąć produkt, użyj przycisku usuwania:</p>
           
           <div style="text-align: center;">
-            <a href="${deleteUrl}" class="button">🗑️ Poproś o usunięcie produktu</a>
-            <a href="${baseUrl}/verify-sale?token=${secureToken}" class="button" style="background-color: #28a745; margin-left: 10px;">✅ Sprzedane</a>
+            <a href="${baseUrl}/verify-sale?token=${secureToken}" class="button" style="background-color: #28a745;">✅ Oznacz jako sprzedane</a>
+            <a href="${deleteUrl}" class="button" style="margin-left: 10px;">🗑️ Poproś o usunięcie produktu</a>
           </div>
           
           <p><strong>Ważne:</strong> Link do usunięcia działa tylko dla tego adresu email. Jeśli chcesz usunąć produkt, kliknij przycisk powyżej, a administrator rozpatrzy Twoją prośbę.</p>

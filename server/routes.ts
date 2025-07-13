@@ -232,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Verify sale - PUBLIC endpoint with token validation
+  // Verify sale - PUBLIC endpoint with token validation (marks as sold AND verified)
   app.put("/api/products/:id/verify-sale", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -249,7 +249,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Invalid or expired token for this product" });
       }
       
-      const product = await storage.verifySale(id, comment);
+      // Mark as both sold and verified since owner confirmed the sale
+      const product = await storage.updateProduct(id, {
+        isSold: true,
+        saleVerified: true,
+        saleVerificationComment: comment || null,
+        saleVerifiedAt: new Date()
+      });
       
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
