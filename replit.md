@@ -109,6 +109,13 @@ The application is structured as a monorepo with shared types and schemas, makin
 ## Recent Changes
 
 ### Latest modifications with dates (July 13, 2025)
+- **Updated Domain Configuration and Simplified Delete Requests** (Evening, July 13, 2025)
+  - Configured all email links and Open Graph URLs to use custom domain https://spottedgfc.pl
+  - Removed email requirement from delete request forms when using secure tokens from emails
+  - Enhanced backend to validate delete request tokens and automatically extract submitter email
+  - Maintained backward compatibility for legacy delete requests without tokens
+  - Updated email footers to include branded domain links
+
 - **Implemented Sale Verification System** (Evening, July 13, 2025)
   - Added sale verification functionality allowing product owners to mark items as sold directly from emails
   - Created secure token-based system for sale confirmation without admin intervention

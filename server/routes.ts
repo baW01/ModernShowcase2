@@ -489,25 +489,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/delete-requests", async (req, res) => {
     try {
-      const { productId, submitterEmail, reason } = req.body;
+      const { productId, submitterEmail, reason, token } = req.body;
       
-      if (!productId || !submitterEmail) {
-        return res.status(400).json({ message: "Product ID and submitter email are required" });
+      let validatedProductId = productId;
+      let validatedEmail = submitterEmail;
+      
+      // If token is provided, validate it and extract product info
+      if (token) {
+        const { validateProductToken } = await import('./hash-utils');
+        validatedProductId = validateProductToken(token);
+        
+        if (!validatedProductId) {
+          return res.status(400).json({ message: "Invalid or expired token" });
+        }
+        
+        // Get product to extract submitter email
+        const product = await storage.getProduct(validatedProductId);
+        if (!product) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+        
+        validatedEmail = product.submitterEmail;
+      } else {
+        // Legacy method - require both productId and submitterEmail
+        if (!productId || !submitterEmail) {
+          return res.status(400).json({ message: "Product ID and submitter email are required" });
+        }
+
+        // Verify that the product exists and the email matches
+        const product = await storage.getProduct(productId);
+        if (!product) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+
+        if (product.submitterEmail !== submitterEmail) {
+          return res.status(403).json({ message: "Email does not match the product submitter" });
+        }
       }
 
-      // Verify that the product exists and the email matches
-      const product = await storage.getProduct(productId);
+      // Get product for email purposes
+      const product = await storage.getProduct(validatedProductId);
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
 
-      if (product.submitterEmail !== submitterEmail) {
-        return res.status(403).json({ message: "Email does not match the product submitter" });
-      }
-
       const deleteRequest = await storage.createDeleteRequest({
-        productId,
-        submitterEmail,
+        productId: validatedProductId,
+        submitterEmail: validatedEmail,
         reason,
       });
 
@@ -515,7 +543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { sendEmail, generateDeleteRequestEmailHtml } = await import('./email');
       try {
         await sendEmail({
-          to: submitterEmail,
+          to: validatedEmail,
           from: process.env.FROM_EMAIL || 'noreply@spotted-gfc.com',
           subject: 'Prośba o usunięcie produktu otrzymana 📝',
           html: generateDeleteRequestEmailHtml(product.title, reason)

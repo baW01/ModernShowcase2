@@ -14,12 +14,16 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Trash2, AlertCircle, CheckCircle, Info } from "lucide-react";
 
-const deleteRequestSchema = z.object({
-  submitterEmail: z.string().min(1, "Email jest wymagany").email("Podaj prawidłowy adres email"),
+// Create dynamic schema based on whether token is available
+const createDeleteRequestSchema = (hasToken: boolean) => z.object({
+  submitterEmail: hasToken ? z.string().optional() : z.string().min(1, "Email jest wymagany").email("Podaj prawidłowy adres email"),
   reason: z.string().optional(),
 });
 
-type DeleteRequestFormData = z.infer<typeof deleteRequestSchema>;
+type DeleteRequestFormData = {
+  submitterEmail?: string;
+  reason?: string;
+};
 
 export default function DeleteRequest() {
   const [location] = useLocation();
@@ -29,7 +33,7 @@ export default function DeleteRequest() {
   const { toast } = useToast();
 
   const form = useForm<DeleteRequestFormData>({
-    resolver: zodResolver(deleteRequestSchema),
+    resolver: zodResolver(createDeleteRequestSchema(!!token)),
     defaultValues: {
       submitterEmail: "",
       reason: "",
@@ -82,7 +86,7 @@ export default function DeleteRequest() {
   const hasError = token ? (tokenError || !tokenValidation?.valid) : (productError || !product);
 
   const deleteRequestMutation = useMutation({
-    mutationFn: async (data: DeleteRequestFormData & { productId: number }) => {
+    mutationFn: async (data: DeleteRequestFormData & { productId: number; token?: string }) => {
       return await apiRequest("/api/delete-requests", {
         method: "POST",
         body: JSON.stringify(data),
@@ -117,6 +121,7 @@ export default function DeleteRequest() {
     deleteRequestMutation.mutate({
       ...data,
       productId: actualProductId,
+      token: token || undefined,
     });
   };
 
@@ -215,33 +220,46 @@ export default function DeleteRequest() {
           )}
         </CardHeader>
         <CardContent>
-          <Alert className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Aby poprosić o usunięcie produktu, podaj email użyty przy zgłaszaniu produktu. 
-              Administrator rozpatrzy Twoją prośbę i poinformuje Cię o decyzji.
-            </AlertDescription>
-          </Alert>
+          {!token && (
+            <Alert className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Aby poprosić o usunięcie produktu, podaj email użyty przy zgłaszaniu produktu. 
+                Administrator rozpatrzy Twoją prośbę i poinformuje Cię o decyzji.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {token && (
+            <Alert className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Możesz dodać powód usunięcia produktu. Administrator rozpatrzy Twoją prośbę i poinformuje Cię o decyzji.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="submitterEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email używany przy zgłaszaniu produktu *</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="jan@example.com" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!token && (
+                <FormField
+                  control={form.control}
+                  name="submitterEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email używany przy zgłaszaniu produktu *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="email" 
+                          placeholder="jan@example.com" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}
