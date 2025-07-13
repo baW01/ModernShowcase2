@@ -17,8 +17,10 @@ interface ProductRequestsTableProps {
 
 export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProductRequest | null>(null);
+  const [rejectingRequest, setRejectingRequest] = useState<ProductRequest | null>(null);
   const [viewingImages, setViewingImages] = useState<ProductRequest | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
+  const [rejectionReason, setRejectionReason] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -35,7 +37,9 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/product-requests"] });
       setSelectedRequest(null);
+      setRejectingRequest(null);
       setAdminNotes("");
+      setRejectionReason("");
       toast({
         title: "Sukces",
         description: "Status prośby został zaktualizowany",
@@ -100,11 +104,17 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
   };
 
   const handleReject = (request: ProductRequest) => {
-    updateStatusMutation.mutate({
-      id: request.id,
-      status: "rejected",
-      notes: "",
-    });
+    setRejectingRequest(request);
+  };
+
+  const confirmRejection = () => {
+    if (rejectingRequest && rejectionReason.trim()) {
+      updateStatusMutation.mutate({
+        id: rejectingRequest.id,
+        status: "rejected",
+        notes: rejectionReason,
+      });
+    }
   };
 
   const handleViewImages = (request: ProductRequest) => {
@@ -317,6 +327,50 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
               <div className="flex justify-end">
                 <Button variant="outline" onClick={() => setViewingImages(null)}>
                   Zamknij
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!rejectingRequest} onOpenChange={() => setRejectingRequest(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Odrzuć prośbę o dodanie produktu</DialogTitle>
+          </DialogHeader>
+          {rejectingRequest && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium">{rejectingRequest.title}</h3>
+                <p className="text-sm text-muted-foreground">{rejectingRequest.description}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Powód odrzucenia*</label>
+                <Textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Opisz dlaczego prośba została odrzucona (informacja zostanie wysłana e-mailem do zgłaszającego)..."
+                  className="mt-1"
+                  required
+                />
+              </div>
+              <div className="text-xs text-muted-foreground">
+                * Powód odrzucenia zostanie wysłany e-mailem na adres: {rejectingRequest.submitterEmail}
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => {
+                  setRejectingRequest(null);
+                  setRejectionReason("");
+                }}>
+                  Anuluj
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={confirmRejection} 
+                  disabled={updateStatusMutation.isPending || !rejectionReason.trim()}
+                >
+                  Odrzuć prośbę
                 </Button>
               </div>
             </div>

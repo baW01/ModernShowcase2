@@ -150,3 +150,47 @@ export function generateDeleteRequestEmailHtml(productTitle: string, reason?: st
     </html>
   `;
 }
+
+export function generateRejectionEmailHtml(productTitle: string, reason: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Prośba o dodanie produktu odrzucona</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f4f4f4; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .reason-box { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 15px 0; }
+        .footer { font-size: 12px; color: #666; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>❌ Prośba o dodanie produktu odrzucona</h1>
+        </div>
+        <div class="content">
+          <p>Witaj!</p>
+          <p>Niestety musimy poinformować Cię, że Twoja prośba o dodanie produktu "<strong>${productTitle}</strong>" została odrzucona przez administratora.</p>
+          
+          <div class="reason-box">
+            <h3>Powód odrzucenia:</h3>
+            <p>${reason}</p>
+          </div>
+          
+          <p>Jeśli masz pytania dotyczące tej decyzji lub chcesz poprawić swoją prośbę, możesz spróbować ponownie z uwzględnieniem uwag administratora.</p>
+          
+          <p>Dziękujemy za zrozumienie i zapraszamy do ponownego skorzystania z naszej platformy.</p>
+        </div>
+        <div class="footer">
+          <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
+          <p>© 2025 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}

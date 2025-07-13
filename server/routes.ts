@@ -403,10 +403,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid status. Must be 'approved' or 'rejected'" });
       }
 
+      // Get the original request before updating it
+      const originalRequest = await storage.getProductRequest(id);
+      if (!originalRequest) {
+        return res.status(404).json({ message: "Product request not found" });
+      }
+
       const request = await storage.updateProductRequestStatus(id, status, adminNotes);
       
       if (!request) {
         return res.status(404).json({ message: "Product request not found" });
+      }
+      
+      // Send rejection email if status is rejected and adminNotes (reason) is provided
+      if (status === "rejected" && adminNotes && originalRequest.submitterEmail) {
+        console.log(`Sending rejection email to: ${originalRequest.submitterEmail} for product: ${originalRequest.title}`);
+        const { sendEmail, generateRejectionEmailHtml } = await import('./email.js');
+        try {
+          const emailSent = await sendEmail({
+            to: originalRequest.submitterEmail,
+            from: process.env.FROM_EMAIL || 'noreply@spotted-gfc.com',
+            subject: 'Twoja prośba o dodanie produktu została odrzucona',
+            html: generateRejectionEmailHtml(originalRequest.title, adminNotes)
+          });
+          
+          if (emailSent) {
+            console.log('Rejection email sent successfully');
+          } else {
+            console.log('Rejection email failed to send (returned false)');
+          }
+        } catch (emailError) {
+          console.error('Failed to send rejection email:', emailError);
+          // Don't fail the status update if email fails
+        }
       }
       
       res.json(request);
