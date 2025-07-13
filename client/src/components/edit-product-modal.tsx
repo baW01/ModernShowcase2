@@ -150,10 +150,14 @@ export function EditProductModal({ product, isOpen, onClose }: EditProductModalP
                         <Input
                           type="number"
                           step="0.01"
-                          placeholder="0.00"
+                          min="0"
+                          placeholder="Wpisz cenę"
                           className="pl-8"
                           {...field}
                           onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          onFocus={(e) => {
+                            e.target.select();
+                          }}
                         />
                       </div>
                     </FormControl>

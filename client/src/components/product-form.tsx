@@ -35,7 +35,7 @@ export function ProductForm() {
     defaultValues: {
       title: "",
       description: "",
-      price: 0,
+      price: undefined,
       category: "",
       imageUrl: "",
       imageUrls: [],
@@ -72,7 +72,7 @@ export function ProductForm() {
   const onSubmit = (data: FormData) => {
     const productData: InsertProduct = {
       ...data,
-      price: Math.round(data.price * 100), // Convert to cents
+      price: Math.round((data.price || 0) * 100), // Convert to cents
       imageUrl: imageUrls.length > 0 ? imageUrls[0] : null,
       imageUrls: imageUrls,
     };
@@ -123,10 +123,17 @@ export function ProductForm() {
                         <Input
                           type="number"
                           step="0.01"
-                          placeholder="0.00"
+                          min="0"
+                          placeholder="Wpisz cenę"
                           className="pl-8"
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === '' ? undefined : parseFloat(value));
+                          }}
+                          onFocus={(e) => {
+                            e.target.select();
+                          }}
                         />
                       </div>
                     </FormControl>

@@ -27,7 +27,7 @@ const formSchema = insertProductRequestSchema.extend({
 type FormData = {
   title: string;
   description: string;
-  price: number;
+  price: number | undefined;
   category: string;
   imageUrl?: string;
   imageUrls?: string[];
@@ -46,7 +46,7 @@ export function ProductRequestForm() {
     defaultValues: {
       title: "",
       description: "",
-      price: 0,
+      price: undefined,
       category: "",
       imageUrl: "",
       imageUrls: [],
@@ -85,7 +85,7 @@ export function ProductRequestForm() {
     const productData: InsertProductRequest = {
       title: data.title,
       description: data.description,
-      price: data.price,
+      price: data.price || 0,
       category: data.category,
       imageUrl: data.imageUrls && data.imageUrls.length > 0 ? data.imageUrls[0] : (data.imageUrl || ""),
       imageUrls: data.imageUrls || [],
@@ -196,10 +196,18 @@ export function ProductRequestForm() {
                     <FormControl>
                       <Input 
                         type="number" 
-                        placeholder="0.00" 
+                        placeholder="Wpisz cenę" 
                         step="0.01"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        min="0"
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === '' ? undefined : parseFloat(value));
+                        }}
+                        onFocus={(e) => {
+                          // Select all text on focus for easier editing on mobile
+                          e.target.select();
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
