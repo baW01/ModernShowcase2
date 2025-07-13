@@ -58,15 +58,8 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
 }
 
 export function generateApprovalEmailHtml(productTitle: string, productId: number): string {
-  // REPLIT_DOMAINS may contain multiple domains separated by comma
-  const domains = process.env.REPLIT_DOMAINS;
-  console.log(`Raw REPLIT_DOMAINS: "${domains}"`);
-  
-  // Take only the first domain and clean it
-  const firstDomain = domains ? domains.split(',')[0].trim() : null;
-  console.log(`First domain: "${firstDomain}"`);
-  
-  const baseUrl = firstDomain ? `https://${firstDomain}` : 'http://localhost:5000';
+  // Use custom domain instead of auto-detected Replit domains
+  const baseUrl = 'https://spottedgfc.pl';
   
   // Generate secure token instead of using plain product ID
   const secureToken = generateDeleteRequestToken(productId);
@@ -110,6 +103,7 @@ export function generateApprovalEmailHtml(productTitle: string, productId: numbe
         </div>
         <div class="footer">
           <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
+          <p>© 2024 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
         </div>
       </div>
     </body>
@@ -149,6 +143,7 @@ export function generateDeleteRequestEmailHtml(productTitle: string, reason?: st
         </div>
         <div class="footer">
           <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
+          <p>© 2024 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
         </div>
       </div>
     </body>
