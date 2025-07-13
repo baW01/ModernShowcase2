@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { CloudUpload, X, Image as ImageIcon } from "lucide-react";
+import { CloudUpload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,63 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
   const [previewUrl, setPreviewUrl] = useState(currentImageUrl || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Image compression function
+  const compressImage = (file: File, maxSizeInMB: number = 5): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions to maintain aspect ratio
+        const maxWidth = 1920;
+        const maxHeight = 1920;
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Start with quality 0.8 and reduce if needed
+        let quality = 0.8;
+        const targetSizeBytes = maxSizeInMB * 1024 * 1024;
+        
+        const tryCompress = () => {
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          // Calculate size (approximation: base64 is ~33% larger than binary)
+          const sizeInBytes = (compressedDataUrl.length * 3) / 4;
+          
+          if (sizeInBytes <= targetSizeBytes || quality <= 0.1) {
+            resolve(compressedDataUrl);
+          } else {
+            quality -= 0.1;
+            tryCompress();
+          }
+        };
+        
+        tryCompress();
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -44,7 +101,7 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
     }
   };
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = async (file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
@@ -55,45 +112,52 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: "Błąd",
-        description: "Plik jest za duży. Maksymalny rozmiar to 10MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsUploading(true);
 
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      setPreviewUrl(result);
+    try {
+      let finalDataUrl: string;
       
-      // For demo purposes, we'll use the base64 data URL
-      // In a real app, you'd upload to a file storage service
-      onImageUpload(result);
-      setIsUploading(false);
+      // Check if file is larger than 10MB and needs compression
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "Kompresja",
+          description: `Plik jest duży (${(file.size / 1024 / 1024).toFixed(1)}MB). Kompresuję...`,
+        });
+        
+        finalDataUrl = await compressImage(file, 5);
+        
+        toast({
+          title: "Sukces",
+          description: "Plik został skompresowany i przesłany",
+        });
+      } else {
+        // File is small enough, just convert to base64
+        finalDataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.onerror = () => reject(new Error('Failed to read file'));
+          reader.readAsDataURL(file);
+        });
+        
+        toast({
+          title: "Sukces",
+          description: "Zdjęcie zostało przesłane",
+        });
+      }
       
-      toast({
-        title: "Sukces",
-        description: "Zdjęcie zostało przesłane",
-      });
-    };
-    
-    reader.onerror = () => {
-      setIsUploading(false);
+      setPreviewUrl(finalDataUrl);
+      onImageUpload(finalDataUrl);
+      
+    } catch (error) {
+      console.error('Error processing image:', error);
       toast({
         title: "Błąd",
-        description: "Nie udało się wczytać zdjęcia",
+        description: "Nie udało się przetworzyć zdjęcia",
         variant: "destructive",
       });
-    };
-    
-    reader.readAsDataURL(file);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleUrlChange = (url: string) => {
@@ -170,25 +234,40 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
           </div>
         ) : (
           <div>
-            <CloudUpload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-sm text-gray-600 mb-2">
-              {isUploading ? "Przesyłanie..." : "Przeciągnij i upuść zdjęcie tutaj"}
-            </p>
-            <p className="text-xs text-gray-500 mb-4">
-              lub
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={openFileDialog}
-              disabled={isUploading}
-            >
-              <ImageIcon className="mr-2 h-4 w-4" />
-              Wybierz plik
-            </Button>
-            <p className="text-xs text-gray-500 mt-2">
-              Maksymalny rozmiar: 10MB (JPG, PNG, GIF)
-            </p>
+            {isUploading ? (
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <ImageIcon className="h-5 w-5 text-blue-500" />
+                  </div>
+                </div>
+                <p className="text-sm text-blue-600 mb-2">Przetwarzanie zdjęcia...</p>
+                <p className="text-xs text-gray-500">Może to zająć chwilę dla większych plików</p>
+              </div>
+            ) : (
+              <div>
+                <CloudUpload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-sm text-gray-600 mb-2">
+                  Przeciągnij i upuść zdjęcie tutaj
+                </p>
+                <p className="text-xs text-gray-500 mb-4">
+                  lub
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={openFileDialog}
+                  disabled={isUploading}
+                >
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  Wybierz plik
+                </Button>
+                <p className="text-xs text-gray-500 mt-2">
+                  Pliki powyżej 10MB zostaną automatycznie skompresowane
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
