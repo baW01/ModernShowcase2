@@ -11,6 +11,7 @@ import NotFound from "@/pages/not-found";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
 import DeleteRequest from "@/pages/delete-request";
+import VerifySale from "@/pages/verify-sale";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/regulamin" component={Terms} />
       <Route path="/polityka-prywatnosci" component={Privacy} />
       <Route path="/delete-request" component={DeleteRequest} />
+      <Route path="/verify-sale" component={VerifySale} />
       <Route component={NotFound} />
     </Switch>
   );

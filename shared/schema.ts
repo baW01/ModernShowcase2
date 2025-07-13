@@ -22,6 +22,9 @@ export const products = pgTable("products", {
   imageUrls: text("image_urls").array(),
   contactPhone: text("contact_phone"), // Individual contact phone for each product
   isSold: boolean("is_sold").notNull().default(false),
+  saleVerified: boolean("sale_verified").notNull().default(false),
+  saleVerificationComment: text("sale_verification_comment"),
+  saleVerifiedAt: timestamp("sale_verified_at"),
   views: integer("views").notNull().default(0),
   clicks: integer("clicks").notNull().default(0),
   submitterEmail: text("submitter_email"), // Track original submitter email for delete requests

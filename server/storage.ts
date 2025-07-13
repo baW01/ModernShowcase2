@@ -29,6 +29,7 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
   deleteProduct(id: number): Promise<boolean>;
+  verifySale(id: number, comment?: string): Promise<Product | undefined>;
   
   // Product Statistics
   incrementProductViews(productId: number, ipAddress?: string, userAgent?: string): Promise<void>;
@@ -138,6 +139,24 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error deleting product:', error);
       throw new Error('Failed to delete product from database');
+    }
+  }
+
+  async verifySale(id: number, comment?: string): Promise<Product | undefined> {
+    try {
+      const [updatedProduct] = await db
+        .update(products)
+        .set({
+          saleVerified: true,
+          saleVerificationComment: comment || null,
+          saleVerifiedAt: new Date()
+        })
+        .where(eq(products.id, id))
+        .returning();
+      return updatedProduct || undefined;
+    } catch (error) {
+      console.error('Error verifying sale:', error);
+      throw new Error('Failed to verify sale in database');
     }
   }
 

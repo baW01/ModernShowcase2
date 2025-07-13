@@ -103,6 +103,7 @@ export function generateApprovalEmailHtml(productTitle: string, productId: numbe
           
           <div style="text-align: center;">
             <a href="${deleteUrl}" class="button">🗑️ Poproś o usunięcie produktu</a>
+            <a href="${baseUrl}/verify-sale?token=${secureToken}" class="button" style="background-color: #28a745; margin-left: 10px;">✅ Sprzedane</a>
           </div>
           
           <p><strong>Ważne:</strong> Link do usunięcia działa tylko dla tego adresu email. Jeśli chcesz usunąć produkt, kliknij przycisk powyżej, a administrator rozpatrzy Twoją prośbę.</p>

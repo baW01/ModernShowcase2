@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Phone, Check, Eye, Share, ExternalLink } from "lucide-react";
+import { Phone, Check, Eye, Share, ExternalLink, CheckCircle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
 import { useEffect, useState } from "react";
@@ -114,7 +114,13 @@ export function ProductCard({ product }: ProductCardProps) {
         {product.isSold && (
           <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         )}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 flex gap-1">
+          {product.saleVerified && (
+            <Badge className="bg-green-600 text-white">
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Zweryfikowane
+            </Badge>
+          )}
           <Badge 
             variant={product.isSold ? "secondary" : "default"}
             className={product.isSold ? "bg-sold text-white" : "bg-secondary text-white"}

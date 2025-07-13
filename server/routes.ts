@@ -232,6 +232,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Verify sale - ADMIN ONLY  
+  app.put("/api/products/:id/verify-sale", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { comment } = req.body;
+      
+      const product = await storage.verifySale(id, comment);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json(product);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to verify sale" });
+    }
+  });
+
   // Get settings
   app.get("/api/settings", async (req, res) => {
     try {
@@ -283,6 +301,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Image upload error:', error);
       res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
+
+  // Validate sale token - PUBLIC endpoint for verify-sale page
+  app.post("/api/validate-sale-token", async (req, res) => {
+    try {
+      const { token } = req.body;
+      
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ message: "No token provided" });
+      }
+
+      const productId = validateProductToken(token);
+      
+      if (!productId) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+      }
+
+      const product = await storage.getProduct(productId);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      res.json({ 
+        productId: product.id,
+        productTitle: product.title 
+      });
+    } catch (error) {
+      console.error('Token validation error:', error);
+      res.status(500).json({ message: "Failed to validate token" });
     }
   });
 
