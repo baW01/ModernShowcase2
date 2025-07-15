@@ -34,6 +34,8 @@ export function DeleteRequestsTable({ requests }: DeleteRequestsTableProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/delete-requests"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      // Invalidate public products cache so deleted products disappear immediately
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       setSelectedRequest(null);
       setAdminNotes("");
       toast({

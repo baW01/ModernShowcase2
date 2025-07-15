@@ -59,6 +59,8 @@ export function ProductForm() {
       form.reset();
       setImageUrls([]);
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      // Invalidate public products cache so new products appear immediately
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     },
     onError: (error) => {
       toast({

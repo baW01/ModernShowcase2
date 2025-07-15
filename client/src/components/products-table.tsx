@@ -28,6 +28,8 @@ export function ProductsTable({ products }: ProductsTableProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      // Invalidate public products cache so changes appear immediately
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
         title: "Sukces",
         description: "Produkt został zaktualizowany pomyślnie",
@@ -50,6 +52,8 @@ export function ProductsTable({ products }: ProductsTableProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      // Invalidate public products cache so deleted products disappear immediately
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
         title: "Sukces",
         description: "Produkt został usunięty pomyślnie",

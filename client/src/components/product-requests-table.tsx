@@ -63,6 +63,8 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/product-requests"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      // Invalidate public products cache so new products appear immediately
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
         title: "Sukces",
         description: "Produkt został dodany do katalogu",

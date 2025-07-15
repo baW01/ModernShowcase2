@@ -108,6 +108,15 @@ The application is structured as a monorepo with shared types and schemas, makin
 
 ## Recent Changes
 
+### Latest modifications with dates (July 15, 2025)
+- **Fixed Post Display Delay After Acceptance** (Afternoon, July 15, 2025)
+  - Identified and resolved cache invalidation issue causing delays in displaying accepted posts
+  - Added missing public products cache invalidation to all product mutations
+  - Updated ProductRequestsTable, ProductForm, EditProductModal, ProductsTable, and DeleteRequestsTable components
+  - Fixed VerifySale page to invalidate cache after sale verification
+  - Products now appear immediately on homepage after admin approval without 10-minute cache delay
+  - Enhanced user experience by eliminating waiting time for approved content visibility
+
 ### Latest modifications with dates (July 13, 2025)
 - **Performance Optimization and Loading Speed Improvements** (Late Evening, July 13, 2025)
   - Implemented lazy loading for product images with `loading="lazy"` attribute for better initial page load

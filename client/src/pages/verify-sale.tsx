@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 
 export default function VerifySale() {
   const [, setLocation] = useLocation();
@@ -98,6 +99,10 @@ export default function VerifySale() {
       }
 
       setIsSubmitted(true);
+      
+      // Invalidate product cache so changes appear immediately
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      
       toast({
         title: "Sukces",
         description: "Produkt został oznaczony jako sprzedany i zweryfikowany",

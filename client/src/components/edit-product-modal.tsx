@@ -82,6 +82,8 @@ export function EditProductModal({ product, isOpen, onClose }: EditProductModalP
         description: "Produkt został zaktualizowany",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      // Invalidate public products cache so changes appear immediately
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       onClose();
     },
     onError: (error) => {
