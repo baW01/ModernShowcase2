@@ -218,6 +218,27 @@ The application is structured as a monorepo with shared types and schemas, makin
 - **Statistics Dashboard**: View engagement metrics for products
 
 ### Legal & Footer
-- **Terms of Service**: Polish terms page (/regulamin)
-- **Privacy Policy**: Polish privacy policy page (/polityka-prywatnosci)
+- **Terms of Service**: Polish terms page (/regulamin) with comprehensive prohibited items list
+- **Privacy Policy**: Polish privacy policy page (/polityka-prywatnosci) with legal compliance monitoring
 - **Donation Footer**: Links to suppi.pl/spottedgfc for financial support
+
+## Recent Changes
+
+### Legal Compliance Update (July 29, 2025)
+- ✓ Updated Terms of Service with detailed list of prohibited products including:
+  - Weapons, ammunition, and explosive materials
+  - Drugs and psychotropic substances  
+  - Prescription medicines and medical devices
+  - Human organs, tissues, and bodily fluids
+  - Protected species (CITES)
+  - Illegal software and hacking tools
+  - Child pornography and obscene materials
+  - Counterfeits and pirated content
+  - Official documents and banking cards
+  - Gambling equipment and licenses
+  - Alcohol and tobacco products
+  - Dangerous chemicals and precursors
+- ✓ Added moderation and content control section to terms
+- ✓ Updated Privacy Policy to include monitoring for prohibited content
+- ✓ Added legal compliance data sharing provisions
+- ✓ Enhanced user responsibility clauses for product legality

@@ -34,6 +34,9 @@ export default function Privacy() {
             <li>Kategoryzacji i organizacji produktów</li>
             <li>Zapobiegania nadużyciom i spam-owi</li>
             <li>Optymalizacji działania platformy</li>
+            <li>Monitorowania zgodności ofert z przepisami prawa i regulaminem</li>
+            <li>Identyfikacji i usuwania zabronionych produktów</li>
+            <li>Zapobiegania handlowi nielegalnymi towarami</li>
           </ul>
 
           <h2>4. Podstawa prawna</h2>
@@ -54,11 +57,17 @@ export default function Privacy() {
             <li>Innym użytkownikom w zakresie danych kontaktowych przy produktach (numer telefonu)</li>
             <li>Podmiotom świadczącym usługi techniczne</li>
             <li>Organom państwowym na podstawie przepisów prawa</li>
+            <li>Organom ścigania w przypadku podejrzenia handlu nielegalnymi produktami</li>
+            <li>Odpowiednim instytucjom w ramach współpracy przy wykrywaniu zabronionych treści</li>
           </ul>
           <p>
             <strong>Ochrona prywatności:</strong> Adresy email użytkowników nie są udostępniane publicznie. 
             Są one używane wyłącznie do komunikacji administracyjnej oraz w procesie zarządzania 
             wnioskami o produkty i prośbami o usunięcie.
+          </p>
+          <p>
+            <strong>Współpraca z organami:</strong> W przypadku wykrycia ofert dotyczących produktów zabronionych 
+            prawem, dane użytkowników mogą zostać przekazane odpowiednim organom zgodnie z obowiązującymi przepisami.
           </p>
 
           <h2>6. Okres przechowywania danych</h2>
