@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertProductSchema, insertSettingsSchema, insertProductRequestSchema, insertCategorySchema } from "@shared/schema";
+import { insertProductSchema, insertSettingsSchema, insertProductRequestSchema, insertCategorySchema, insertAdvertisementSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateToken, verifyPassword, authenticateToken, requireAdmin, authRateLimitConfig } from "./auth";
 import { validateProductToken } from "./hash-utils";
@@ -817,6 +817,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Category deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete category" });
+    }
+  });
+
+  // Advertisements routes
+  
+  // Get all advertisements - ADMIN ONLY
+  app.get("/api/advertisements", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const advertisements = await storage.getAdvertisements();
+      res.json(advertisements);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch advertisements" });
+    }
+  });
+
+  // Get active advertisements - PUBLIC endpoint for displaying ads
+  app.get("/api/advertisements/active", async (req, res) => {
+    try {
+      const advertisements = await storage.getActiveAdvertisements();
+      res.json(advertisements);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch active advertisements" });
+    }
+  });
+
+  // Create advertisement - ADMIN ONLY
+  app.post("/api/advertisements", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertAdvertisementSchema.parse(req.body);
+      const ad = await storage.createAdvertisement(validatedData);
+      res.status(201).json(ad);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid advertisement data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create advertisement" });
+    }
+  });
+
+  // Update advertisement - ADMIN ONLY
+  app.put("/api/advertisements/:id", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertAdvertisementSchema.partial().parse(req.body);
+      const ad = await storage.updateAdvertisement(id, validatedData);
+      
+      if (!ad) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      
+      res.json(ad);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid advertisement data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update advertisement" });
+    }
+  });
+
+  // Delete advertisement - ADMIN ONLY
+  app.delete("/api/advertisements/:id", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteAdvertisement(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      
+      res.json({ message: "Advertisement deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete advertisement" });
+    }
+  });
+
+  // Track advertisement view - PUBLIC endpoint
+  app.post("/api/advertisements/:id/view", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.incrementAdvertisementViews(id);
+      res.json({ message: "View recorded" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to record view" });
+    }
+  });
+
+  // Track advertisement click - PUBLIC endpoint
+  app.post("/api/advertisements/:id/click", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.incrementAdvertisementClicks(id);
+      res.json({ message: "Click recorded" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to record click" });
     }
   });
 

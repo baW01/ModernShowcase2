@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LazyProductCard } from "@/components/lazy-product-card";
 import { ProductRequestForm } from "@/components/product-request-form";
 import { Footer } from "@/components/footer";
-import type { Product, Settings } from "@shared/schema";
+import { AdvertisementCard } from "@/components/advertisement-card";
+import type { Product, Settings, Advertisement } from "@shared/schema";
 import { useState } from "react";
 import { Link } from "wouter";
 
@@ -23,6 +24,10 @@ export default function Home() {
 
   const { data: settings, error: settingsError } = useQuery<Settings>({
     queryKey: ["/api/settings"],
+  });
+
+  const { data: advertisements = [] } = useQuery<Advertisement[]>({
+    queryKey: ["/api/advertisements/active"],
   });
 
   // Debug: Log any errors
@@ -50,6 +55,30 @@ export default function Home() {
   const soldProducts = filteredProducts.filter(product => product.isSold);
 
   const categories = Array.from(new Set(products.map(p => p.category)));
+
+  // Function to mix advertisements with products
+  const mixAdvertisementsWithProducts = (products: Product[]) => {
+    if (advertisements.length === 0 || products.length === 0) {
+      return products;
+    }
+
+    const mixed: (Product | Advertisement)[] = [];
+    let adIndex = 0;
+    
+    products.forEach((product, index) => {
+      mixed.push(product);
+      
+      // Insert advertisement every 6 products (not too frequently)
+      if ((index + 1) % 6 === 0 && adIndex < advertisements.length) {
+        mixed.push(advertisements[adIndex]);
+        adIndex = (adIndex + 1) % advertisements.length; // Cycle through ads
+      }
+    });
+
+    return mixed;
+  };
+
+  const mixedAvailableItems = mixAdvertisementsWithProducts(availableProducts);
 
   if (productsLoading) {
     return (
@@ -195,9 +224,20 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {availableProducts.map((product, index) => (
-                  <LazyProductCard key={product.id} product={product} index={index} />
-                ))}
+                {mixedAvailableItems.map((item, index) => {
+                  // Check if item is an advertisement by checking if it has 'priority' property
+                  if ('priority' in item) {
+                    return (
+                      <div key={`ad-${item.id}`} className="col-span-2 lg:col-span-3 xl:col-span-4">
+                        <AdvertisementCard advertisement={item as Advertisement} />
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <LazyProductCard key={item.id} product={item as Product} index={index} />
+                    );
+                  }
+                })}
               </div>
             )}
           </div>

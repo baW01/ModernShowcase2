@@ -9,6 +9,7 @@ import { DeleteRequestsTable } from "@/components/delete-requests-table";
 import { SettingsForm } from "@/components/settings-form";
 import { AdminLogin } from "@/components/admin-login";
 import { CategoriesManagement } from "@/components/categories-management";
+import { AdvertisementsManagement } from "@/components/advertisements-management";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import type { Product, Settings as SettingsType, ProductRequest, DeleteRequest } from "@shared/schema";
 import { useState } from "react";
@@ -142,6 +143,7 @@ export default function Admin() {
               )}
             </div>
           )}
+          {activeTab === "advertisements" && <AdvertisementsManagement />}
           {activeTab === "settings" && <SettingsForm settings={settings} />}
         </div>
       </div>

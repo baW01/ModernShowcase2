@@ -83,6 +83,20 @@ export const deleteRequests = pgTable("delete_requests", {
   adminNotes: text("admin_notes"),
 });
 
+export const advertisements = pgTable("advertisements", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  targetUrl: text("target_url"),
+  isActive: boolean("is_active").notNull().default(true),
+  priority: integer("priority").notNull().default(1), // Higher priority = more frequent display
+  views: integer("views").notNull().default(0),
+  clicks: integer("clicks").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   views: true,
@@ -115,6 +129,14 @@ export const insertDeleteRequestSchema = createInsertSchema(deleteRequests).omit
   submittedAt: true,
   reviewedAt: true,
   adminNotes: true,
+});
+
+export const insertAdvertisementSchema = createInsertSchema(advertisements).omit({
+  id: true,
+  views: true,
+  clicks: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Relations
@@ -164,3 +186,5 @@ export type ProductView = typeof productViews.$inferSelect;
 export type ProductClick = typeof productClicks.$inferSelect;
 export type DeleteRequest = typeof deleteRequests.$inferSelect;
 export type InsertDeleteRequest = z.infer<typeof insertDeleteRequestSchema>;
+export type Advertisement = typeof advertisements.$inferSelect;
+export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;

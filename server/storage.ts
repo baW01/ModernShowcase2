@@ -6,6 +6,7 @@ import {
   productViews,
   productClicks,
   deleteRequests,
+  advertisements,
   type Product, 
   type InsertProduct, 
   type Settings, 
@@ -17,7 +18,9 @@ import {
   type ProductView,
   type ProductClick,
   type DeleteRequest,
-  type InsertDeleteRequest
+  type InsertDeleteRequest,
+  type Advertisement,
+  type InsertAdvertisement
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, and } from "drizzle-orm";
@@ -60,6 +63,16 @@ export interface IStorage {
   createDeleteRequest(request: InsertDeleteRequest): Promise<DeleteRequest>;
   updateDeleteRequestStatus(id: number, status: "approved" | "rejected", adminNotes?: string): Promise<DeleteRequest | undefined>;
   deleteDeleteRequest(id: number): Promise<boolean>;
+  
+  // Advertisements
+  getAdvertisements(): Promise<Advertisement[]>;
+  getActiveAdvertisements(): Promise<Advertisement[]>;
+  getAdvertisement(id: number): Promise<Advertisement | undefined>;
+  createAdvertisement(ad: InsertAdvertisement): Promise<Advertisement>;
+  updateAdvertisement(id: number, ad: Partial<InsertAdvertisement>): Promise<Advertisement | undefined>;
+  deleteAdvertisement(id: number): Promise<boolean>;
+  incrementAdvertisementViews(id: number): Promise<void>;
+  incrementAdvertisementClicks(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -465,6 +478,99 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error deleting delete request:', error);
       throw new Error('Failed to delete delete request from database');
+    }
+  }
+
+  // Advertisement methods
+  async getAdvertisements(): Promise<Advertisement[]> {
+    try {
+      return await db.select().from(advertisements).orderBy(desc(advertisements.createdAt));
+    } catch (error) {
+      console.error('Error fetching advertisements:', error);
+      throw new Error('Failed to fetch advertisements from database');
+    }
+  }
+
+  async getActiveAdvertisements(): Promise<Advertisement[]> {
+    try {
+      return await db.select().from(advertisements).where(eq(advertisements.isActive, true)).orderBy(desc(advertisements.priority));
+    } catch (error) {
+      console.error('Error fetching active advertisements:', error);
+      throw new Error('Failed to fetch active advertisements from database');
+    }
+  }
+
+  async getAdvertisement(id: number): Promise<Advertisement | undefined> {
+    try {
+      const [ad] = await db.select().from(advertisements).where(eq(advertisements.id, id));
+      return ad || undefined;
+    } catch (error) {
+      console.error('Error fetching advertisement:', error);
+      throw new Error('Failed to fetch advertisement from database');
+    }
+  }
+
+  async createAdvertisement(insertAd: InsertAdvertisement): Promise<Advertisement> {
+    try {
+      const [ad] = await db
+        .insert(advertisements)
+        .values(insertAd)
+        .returning();
+      return ad;
+    } catch (error) {
+      console.error('Error creating advertisement:', error);
+      throw new Error('Failed to create advertisement in database');
+    }
+  }
+
+  async updateAdvertisement(id: number, updates: Partial<InsertAdvertisement>): Promise<Advertisement | undefined> {
+    try {
+      const [updatedAd] = await db
+        .update(advertisements)
+        .set({
+          ...updates,
+          updatedAt: new Date()
+        })
+        .where(eq(advertisements.id, id))
+        .returning();
+      return updatedAd || undefined;
+    } catch (error) {
+      console.error('Error updating advertisement:', error);
+      throw new Error('Failed to update advertisement in database');
+    }
+  }
+
+  async deleteAdvertisement(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(advertisements).where(eq(advertisements.id, id));
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting advertisement:', error);
+      throw new Error('Failed to delete advertisement from database');
+    }
+  }
+
+  async incrementAdvertisementViews(id: number): Promise<void> {
+    try {
+      await db
+        .update(advertisements)
+        .set({ views: sql`${advertisements.views} + 1` })
+        .where(eq(advertisements.id, id));
+    } catch (error) {
+      console.error('Error incrementing advertisement views:', error);
+      throw new Error('Failed to increment advertisement views');
+    }
+  }
+
+  async incrementAdvertisementClicks(id: number): Promise<void> {
+    try {
+      await db
+        .update(advertisements)
+        .set({ clicks: sql`${advertisements.clicks} + 1` })
+        .where(eq(advertisements.id, id));
+    } catch (error) {
+      console.error('Error incrementing advertisement clicks:', error);
+      throw new Error('Failed to increment advertisement clicks');
     }
   }
 }
