@@ -213,7 +213,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <ContactModal
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}
-        phoneNumber={product.contactPhone}
+        phoneNumber={product.contactPhone || ""}
         productTitle={product.title}
       />
     </div>

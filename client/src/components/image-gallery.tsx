@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import noImagePlaceholder from "@/assets/no-image-placeholder.svg";
 
 interface ImageGalleryProps {
   images: string[];
@@ -43,11 +44,11 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
   // If no images or only one image, show single image
   if (!images || images.length === 0) {
     return (
-      <div className={`aspect-square bg-gray-100 relative overflow-hidden ${className}`}>
+      <div className={`aspect-square bg-gray-100 relative overflow-hidden ${className} flex items-center justify-center`}>
         <img 
-          src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800"
-          alt={alt}
-          className="w-full h-full object-cover"
+          src={noImagePlaceholder}
+          alt="Brak zdjęcia"
+          className="w-32 h-32 opacity-60"
         />
       </div>
     );
@@ -57,9 +58,9 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
     return (
       <div className={`aspect-square bg-gray-100 relative overflow-hidden ${className}`}>
         <img 
-          src={images[0] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800"}
+          src={images[0] || noImagePlaceholder}
           alt={alt}
-          className="w-full h-full object-cover"
+          className={images[0] ? "w-full h-full object-cover" : "w-32 h-32 opacity-60 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"}
           draggable={false}
         />
       </div>
