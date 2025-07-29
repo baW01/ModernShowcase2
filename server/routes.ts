@@ -71,6 +71,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create auth rate limiter
   const authLimiter = rateLimit(authRateLimitConfig);
 
+  // Rate limiter for product creation to prevent spam
+  const productCreationLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 3, // Limit each IP to 3 product posts per 10 minutes
+    message: 'Zbyt dużo postów w krótkim czasie. Spróbuj ponownie za 10 minut.',
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      // Use IP + user agent for better spam detection
+      return req.ip + '|' + (req.get('user-agent') || '');
+    }
+  });
+
+  // Rate limiter for product requests to prevent spam
+  const productRequestLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes  
+    max: 2, // Limit each IP to 2 product requests per 5 minutes
+    message: 'Zbyt dużo próśb w krótkim czasie. Spróbuj ponownie za 5 minut.',
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      return req.ip + '|' + (req.get('user-agent') || '');
+    }
+  });
+
   // Authentication endpoint
   app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
@@ -199,7 +224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new product - ADMIN ONLY
-  app.post("/api/products", authenticateToken, requireAdmin, async (req, res) => {
+  app.post("/api/products", productCreationLimiter, authenticateToken, requireAdmin, async (req, res) => {
     try {
       const validatedData = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(validatedData);
@@ -380,7 +405,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new product request
-  app.post("/api/product-requests", async (req, res) => {
+  app.post("/api/product-requests", productRequestLimiter, async (req, res) => {
     try {
       const validatedData = insertProductRequestSchema.parse(req.body);
       const request = await storage.createProductRequest(validatedData);
@@ -532,7 +557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/delete-requests", async (req, res) => {
+  app.post("/api/delete-requests", productRequestLimiter, async (req, res) => {
     try {
       const { productId, submitterEmail, reason, token } = req.body;
       
