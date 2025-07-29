@@ -71,8 +71,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create auth rate limiter
   const authLimiter = rateLimit(authRateLimitConfig);
 
-  // Rate limiter for product creation to prevent spam
-  const productCreationLimiter = rateLimit({
+  // Rate limiter for product creation to prevent spam (does NOT apply to admin endpoints)
+  const publicProductCreationLimiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 10 minutes
     max: 3, // Limit each IP to 3 product posts per 10 minutes
     message: 'Zbyt dużo postów w krótkim czasie. Spróbuj ponownie za 10 minut.',
@@ -223,8 +223,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new product - ADMIN ONLY
-  app.post("/api/products", productCreationLimiter, authenticateToken, requireAdmin, async (req, res) => {
+  // Create new product - ADMIN ONLY (no rate limiting for admins)
+  app.post("/api/products", authenticateToken, requireAdmin, async (req, res) => {
     try {
       const validatedData = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(validatedData);

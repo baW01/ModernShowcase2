@@ -102,9 +102,10 @@ The application is structured as a monorepo with shared types and schemas, makin
 ### Security Implementation Details
 - JWT tokens expire after 24 hours
 - Rate limiting: 5 login attempts per 15 minutes per IP
-- General API rate limit: 100 requests per 15 minutes per IP
-- Product creation rate limit: 3 posts per 10 minutes per IP + User Agent
+- General API rate limit: 100 requests per 15 minutes per IP (admins exempt)
+- Public product creation rate limit: 3 posts per 10 minutes per IP + User Agent
 - Product requests rate limit: 2 requests per 5 minutes per IP + User Agent
+- **Admin exemption**: Authenticated administrators bypass all rate limits
 - Authorization header format: `Bearer <token>`
 - All admin operations require authentication token
 
@@ -246,9 +247,11 @@ The application is structured as a monorepo with shared types and schemas, makin
 - ✓ Enhanced user responsibility clauses for product legality
 
 ### Rate Limiting Enhancement (July 29, 2025)
-- ✓ Added dedicated rate limiting for product creation: 3 posts per 10 minutes
+- ✓ Added dedicated rate limiting for public product creation: 3 posts per 10 minutes
 - ✓ Added rate limiting for product requests: 2 requests per 5 minutes  
 - ✓ Added rate limiting for delete requests: 2 requests per 5 minutes
 - ✓ Enhanced spam detection using IP + User Agent combination
 - ✓ Polish error messages for rate limit violations
-- ✓ Prevents single user from flooding platform with multiple posts
+- ✓ **Admin exemption**: Administrators bypass all rate limits for efficient management
+- ✓ JWT-based admin detection in global rate limiter
+- ✓ Prevents single user from flooding platform with multiple posts without limiting admin work

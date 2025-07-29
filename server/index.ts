@@ -7,6 +7,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import compression from "compression";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 
 // Load environment variables
 dotenv.config();
@@ -51,13 +52,28 @@ app.use(cors({
   credentials: true,
 }));
 
-// General rate limiting
+// General rate limiting with exemption for authenticated admins
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for authenticated admin users
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.substring(7);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret') as any;
+        return decoded.isAdmin === true; // Skip rate limiting for admins
+      } catch (error) {
+        // Invalid token, apply rate limiting
+        return false;
+      }
+    }
+    return false; // Apply rate limiting for non-authenticated requests
+  }
 });
 
 app.use('/api/', limiter);
