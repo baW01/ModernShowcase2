@@ -65,25 +65,18 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async getProducts(sortBy: 'popularity' | 'newest' | 'price_asc' | 'price_desc' = 'newest'): Promise<Product[]> {
     try {
-      let query = db.select().from(products);
-      
       switch (sortBy) {
         case 'popularity':
-          query = query.orderBy(desc(sql`${products.views} + ${products.clicks} * 2`));
-          break;
+          return await db.select().from(products).orderBy(desc(sql`${products.views} + ${products.clicks} * 2`));
         case 'newest':
-          query = query.orderBy(desc(products.createdAt));
-          break;
+          return await db.select().from(products).orderBy(desc(products.createdAt));
         case 'price_asc':
-          query = query.orderBy(products.price);
-          break;
+          return await db.select().from(products).orderBy(products.price);
         case 'price_desc':
-          query = query.orderBy(desc(products.price));
-          break;
+          return await db.select().from(products).orderBy(desc(products.price));
+        default:
+          return await db.select().from(products).orderBy(desc(products.createdAt));
       }
-      
-      const productList = await query;
-      return productList;
     } catch (error) {
       console.error('Error fetching products:', error);
       throw new Error('Failed to fetch products from database');

@@ -49,7 +49,7 @@ export default function Home() {
   const availableProducts = filteredProducts.filter(product => !product.isSold);
   const soldProducts = filteredProducts.filter(product => product.isSold);
 
-  const categories = [...new Set(products.map(p => p.category))];
+  const categories = Array.from(new Set(products.map(p => p.category)));
 
   if (productsLoading) {
     return (
@@ -175,7 +175,7 @@ export default function Home() {
                 <p className="text-gray-600">
                   Znaleziono {availableProducts.length} {availableProducts.length === 1 ? 'produkt' : 'produktów'}
                 </p>
-                <Select value={sortBy} onValueChange={setSortBy}>
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'popularity' | 'newest' | 'price_asc' | 'price_desc')}>
                   <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Sortuj według" />
                   </SelectTrigger>

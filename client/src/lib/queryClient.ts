@@ -14,8 +14,8 @@ export async function apiRequest<T = any>(
   // Get the token from localStorage
   const token = localStorage.getItem("admin_jwt_token");
   
-  const headers: HeadersInit = {
-    ...options.headers,
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string> || {}),
   };
 
   // Add Content-Type for JSON body
@@ -47,7 +47,7 @@ export const getQueryFn: <T>(options: {
     // Get the token from localStorage
     const token = localStorage.getItem("admin_jwt_token");
     
-    const headers: HeadersInit = {};
+    const headers: Record<string, string> = {};
     
     // Add Authorization header if token exists
     if (token) {
@@ -74,7 +74,7 @@ export const queryClient = new QueryClient({
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: 10 * 60 * 1000, // 10 minutes for better caching
-      cacheTime: 30 * 60 * 1000, // 30 minutes cache retention
+      gcTime: 30 * 60 * 1000, // 30 minutes cache retention
       retry: 1,
     },
     mutations: {

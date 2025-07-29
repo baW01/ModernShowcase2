@@ -20,7 +20,7 @@ app.set('trust proxy', 1);
 app.use(compression({
   level: 6, // Balanced compression level
   threshold: 1024, // Only compress responses larger than 1KB
-  filter: (req, res) => {
+  filter: (req: express.Request, res: express.Response) => {
     // Don't compress responses for certain routes
     if (req.headers['x-no-compression']) {
       return false;
