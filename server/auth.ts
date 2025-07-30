@@ -39,11 +39,7 @@ export function verifyToken(token: string): JWTPayload | null {
 
 export async function verifyPassword(password: string): Promise<boolean> {
   try {
-    console.log('Verifying password...');
-    console.log('Password received:', password);
-    console.log('Hash from env:', ADMIN_PASSWORD_HASH);
     const result = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
-    console.log('Verification result:', result);
     return result;
   } catch (error) {
     console.error('Password verification error:', error);

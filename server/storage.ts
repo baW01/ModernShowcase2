@@ -225,10 +225,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const [request] = await db
         .insert(productRequests)
-        .values({
-          ...insertRequest,
-          submittedAt: new Date().toISOString(),
-        })
+        .values(insertRequest)
         .returning();
       return request;
     } catch (error) {
