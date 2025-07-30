@@ -36,6 +36,8 @@ export function AdvertisementsManagement() {
 
   const { data: advertisements = [], isLoading } = useQuery<Advertisement[]>({
     queryKey: ["/api/advertisements"],
+    staleTime: 0, // Always refetch when cache is invalidated
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 
   // Create advertisement mutation
@@ -49,6 +51,8 @@ export function AdvertisementsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/advertisements"] });
       queryClient.invalidateQueries({ queryKey: ["/api/advertisements/active"] });
+      queryClient.refetchQueries({ queryKey: ["/api/advertisements"] });
+      queryClient.refetchQueries({ queryKey: ["/api/advertisements/active"] });
       setIsAddOpen(false);
       toast({
         title: "Sukces",
@@ -75,6 +79,8 @@ export function AdvertisementsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/advertisements"] });
       queryClient.invalidateQueries({ queryKey: ["/api/advertisements/active"] });
+      queryClient.refetchQueries({ queryKey: ["/api/advertisements"] });
+      queryClient.refetchQueries({ queryKey: ["/api/advertisements/active"] });
       setEditingAd(null);
       toast({
         title: "Sukces",
@@ -100,6 +106,8 @@ export function AdvertisementsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/advertisements"] });
       queryClient.invalidateQueries({ queryKey: ["/api/advertisements/active"] });
+      queryClient.refetchQueries({ queryKey: ["/api/advertisements"] });
+      queryClient.refetchQueries({ queryKey: ["/api/advertisements/active"] });
       toast({
         title: "Sukces",
         description: "Reklama została usunięta pomyślnie",

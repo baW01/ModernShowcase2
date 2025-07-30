@@ -825,6 +825,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all advertisements - ADMIN ONLY
   app.get("/api/advertisements", authenticateToken, requireAdmin, async (req, res) => {
     try {
+      // Disable caching for real-time updates in admin panel
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       const advertisements = await storage.getAdvertisements();
       res.json(advertisements);
     } catch (error) {
@@ -835,6 +842,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get active advertisements - PUBLIC endpoint for displaying ads
   app.get("/api/advertisements/active", async (req, res) => {
     try {
+      // Disable caching for real-time updates
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       const advertisements = await storage.getActiveAdvertisements();
       res.json(advertisements);
     } catch (error) {

@@ -28,6 +28,9 @@ export default function Home() {
 
   const { data: advertisements = [] } = useQuery<Advertisement[]>({
     queryKey: ["/api/advertisements/active"],
+    staleTime: 0, // Always refetch when cache is invalidated
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 
   // Debug: Log any errors
