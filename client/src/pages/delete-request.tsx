@@ -12,7 +12,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Trash2, AlertCircle, CheckCircle, Info } from "lucide-react";
+import { Trash2, AlertCircle, CheckCircle, Info, User } from "lucide-react";
+import { getAutofillData, hasAutofillData } from "@/lib/autofill-storage";
 
 // Create dynamic schema based on whether token is available
 const createDeleteRequestSchema = (hasToken: boolean) => z.object({
@@ -40,6 +41,16 @@ export default function DeleteRequest() {
     },
   });
 
+  // Load autofill email data
+  useEffect(() => {
+    if (!token && hasAutofillData()) {
+      const storedData = getAutofillData();
+      if (storedData.submitterEmail) {
+        form.setValue("submitterEmail", storedData.submitterEmail);
+      }
+    }
+  }, [form, token]);
+
   useEffect(() => {
     console.log('Current location:', location);
     console.log('Window search:', window.location.search);
@@ -62,14 +73,22 @@ export default function DeleteRequest() {
   }, [location]);
 
   // Validate token and get product info
-  const { data: tokenValidation, isLoading: isValidatingToken, error: tokenError } = useQuery({
+  const { data: tokenValidation, isLoading: isValidatingToken, error: tokenError } = useQuery<{
+    valid: boolean;
+    productId: number;
+    productTitle: string;
+  }>({
     queryKey: ['/api/validate-token', token],
     enabled: !!token,
     retry: false,
   });
 
   // Check if product exists (for legacy productId method)
-  const { data: product, isLoading: isLoadingProduct, error: productError } = useQuery({
+  const { data: product, isLoading: isLoadingProduct, error: productError } = useQuery<{
+    id: number;
+    title: string;
+    [key: string]: any;
+  }>({
     queryKey: ['/api/products', productId],
     enabled: !!productId && !token,
     retry: false,
@@ -217,6 +236,12 @@ export default function DeleteRequest() {
             <p className="text-sm text-muted-foreground">
               Produkt: <strong>{actualProduct.title}</strong>
             </p>
+          )}
+          {!token && hasAutofillData() && getAutofillData().submitterEmail && (
+            <div className="mb-4 flex items-center text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <User className="h-4 w-4 mr-2" />
+              <span className="text-sm">Email uzupełniony automatycznie z zapisanych danych</span>
+            </div>
           )}
         </CardHeader>
         <CardContent>

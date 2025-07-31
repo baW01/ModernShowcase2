@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, User, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertProductRequestSchema, type InsertProductRequest } from "@shared/schema";
 import { MultipleImageUpload } from "@/components/multiple-image-upload";
+import { saveAutofillData, getAutofillData, clearAutofillData, hasAutofillData } from "@/lib/autofill-storage";
 
 const formSchema = insertProductRequestSchema.extend({
   price: insertProductRequestSchema.shape.price.transform((val) => Math.round(val * 100)),
@@ -38,6 +39,7 @@ type FormData = {
 
 export function ProductRequestForm() {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasStoredData, setHasStoredData] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -56,6 +58,48 @@ export function ProductRequestForm() {
     },
   });
 
+  // Load autofill data when component mounts
+  useEffect(() => {
+    const storedData = getAutofillData();
+    const hasData = hasAutofillData();
+    setHasStoredData(hasData);
+    
+    if (hasData) {
+      form.setValue("submitterName", storedData.submitterName);
+      form.setValue("submitterEmail", storedData.submitterEmail);
+      form.setValue("contactPhone", storedData.contactPhone);
+    }
+  }, [form]);
+
+  // Load autofill data when dialog opens
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      const storedData = getAutofillData();
+      const hasData = hasAutofillData();
+      setHasStoredData(hasData);
+      
+      if (hasData) {
+        form.setValue("submitterName", storedData.submitterName);
+        form.setValue("submitterEmail", storedData.submitterEmail);
+        form.setValue("contactPhone", storedData.contactPhone);
+      }
+    }
+  };
+
+  // Clear autofill data
+  const handleClearAutofill = () => {
+    clearAutofillData();
+    setHasStoredData(false);
+    form.setValue("submitterName", "");
+    form.setValue("submitterEmail", "");
+    form.setValue("contactPhone", "");
+    toast({
+      title: "Dane usunięte",
+      description: "Zapisane dane kontaktowe zostały usunięte.",
+    });
+  };
+
   const mutation = useMutation({
     mutationFn: async (data: InsertProductRequest) => {
       return await apiRequest("/api/product-requests", {
@@ -64,12 +108,22 @@ export function ProductRequestForm() {
       });
     },
     onSuccess: () => {
+      const formData = form.getValues();
+      
+      // Save contact data for future use
+      saveAutofillData({
+        submitterName: formData.submitterName,
+        submitterEmail: formData.submitterEmail,
+        contactPhone: formData.contactPhone,
+      });
+      
       toast({
         title: "Sukces",
-        description: "Prośba o dodanie produktu została wysłana!",
+        description: "Prośba o dodanie produktu została wysłana! Twoje dane kontaktowe zostały zapisane dla przyszłego użytku.",
       });
       form.reset();
       setIsOpen(false);
+      setHasStoredData(true);
       queryClient.invalidateQueries({ queryKey: ["/api/product-requests"] });
     },
     onError: (error) => {
@@ -106,7 +160,7 @@ export function ProductRequestForm() {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="bg-accent hover:bg-accent/90 text-black w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
@@ -117,6 +171,24 @@ export function ProductRequestForm() {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Poproś o dodanie produktu</DialogTitle>
+          {hasStoredData && (
+            <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <div className="flex items-center text-blue-700">
+                <User className="h-4 w-4 mr-2" />
+                <span className="text-sm">Dane kontaktowe uzupełnione automatycznie</span>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleClearAutofill}
+                className="h-8 px-3"
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Usuń
+              </Button>
+            </div>
+          )}
         </DialogHeader>
         
         <Form {...form}>
