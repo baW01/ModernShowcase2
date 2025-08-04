@@ -21,12 +21,12 @@ Preferred communication style: Simple, everyday language.
 ### Backend
 - **Framework**: Express.js with TypeScript
 - **Runtime**: Node.js with ES modules
-- **Database**: PostgreSQL with Drizzle ORM (using Neon Database for serverless PostgreSQL).
+- **Database**: PostgreSQL with Drizzle ORM (using Neon Database for serverless PostgreSQL). Fully optimized with 17 strategic indexes covering: product filtering, sorting, statistics tracking, admin operations, and full-text search.
 - **API Design**: RESTful endpoints for CRUD operations.
 - **Validation**: Zod schemas for request/response validation.
 - **Key Components**: Abstract storage interface, RESTful API endpoints for products and settings, Drizzle ORM database schema.
 - **Security Features**: JWT token-based authentication with protected API endpoints, rate limiting for various actions (login, product creation, requests, delete requests), Helmet.js for security headers, CORS configuration, Bcrypt for password hashing, environment variable usage. Admin users bypass rate limits.
-- **Performance Optimizations**: Lazy loading for images, server-side compression (gzip), HTTP caching headers, optimized TanStack Query settings, debounced view tracking, static asset caching, database indexing.
+- **Performance Optimizations**: Lazy loading for images, server-side compression (gzip), HTTP caching headers, optimized TanStack Query settings, debounced view tracking, static asset caching, comprehensive database indexing (17 strategic indexes for optimal query performance), full-text search capabilities.
 - **Key Features**: Sale verification system via secure tokens, enhanced image upload with compression and immediate upload.
 
 ### Overall System Design
