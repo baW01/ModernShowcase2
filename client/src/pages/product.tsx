@@ -33,24 +33,34 @@ export default function Product() {
   
   const productId = params?.id ? parseInt(params.id) : null;
 
-  const { data: product, isLoading, error } = useQuery({
+  const { data: product, isLoading, error } = useQuery<Product>({
     queryKey: ['/api/products', productId],
     enabled: !!productId,
+    staleTime: 10 * 60 * 1000, // 10 minutes - cache individual products longer
+    refetchOnWindowFocus: false, // Don't refetch when window gets focus
+    retry: 1, // Only retry once on failure for faster error handling
   });
 
-  const { data: settings } = useQuery({
+  const { data: settings } = useQuery<{storeName?: string}>({
     queryKey: ['/api/settings'],
+    staleTime: 30 * 60 * 1000, // 30 minutes - settings rarely change
+    refetchOnWindowFocus: false,
   });
 
-  // Record product view when component mounts
+  // Record product view when component mounts (debounced for performance)
   useEffect(() => {
-    if (productId) {
-      fetch(`/api/products/${productId}/view`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      }).catch(console.error);
+    if (productId && product) {
+      // Debounce view tracking to avoid multiple requests
+      const timer = setTimeout(() => {
+        fetch(`/api/products/${productId}/view`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        }).catch(console.error);
+      }, 1000); // 1 second delay
+      
+      return () => clearTimeout(timer);
     }
-  }, [productId]);
+  }, [productId, product]);
 
   // Update page meta tags for social sharing
   useEffect(() => {

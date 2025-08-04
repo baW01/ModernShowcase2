@@ -182,8 +182,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get single product - PUBLIC endpoint (filtered for public view)
   app.get("/api/products/:id", async (req, res) => {
     try {
+      // Add performance timing
+      const startTime = performance.now();
+      
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid product ID" });
+      }
+      
       const product = await storage.getProduct(id);
+      
+      const dbTime = performance.now();
+      console.log(`[Performance] Single product DB query time: ${(dbTime - startTime).toFixed(2)}ms`);
       
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
@@ -209,15 +219,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // submitterEmail removed for privacy
       };
       
-      // Add cache headers for single product
+      const endTime = performance.now();
+      console.log(`[Performance] Total single product time: ${(endTime - startTime).toFixed(2)}ms`);
+      
+      // Add optimized cache headers for single product
       res.set({
-        'Cache-Control': 'public, max-age=600, stale-while-revalidate=1800', // 10 minutes cache
-        'ETag': `"product-${product.id}-${product.updatedAt}"`,
-        'Last-Modified': new Date(product.updatedAt).toUTCString()
+        'Cache-Control': 'public, max-age=900, stale-while-revalidate=1800', // 15 minutes cache
+        'ETag': `"product-${product.id}-${product.updatedAt?.getTime() || Date.now()}"`,
+        'Last-Modified': new Date(product.updatedAt || product.createdAt).toUTCString(),
+        'Vary': 'Accept-Encoding'
       });
       
       res.json(publicProduct);
     } catch (error) {
+      console.error('Error fetching single product:', error);
       res.status(500).json({ message: "Failed to fetch product" });
     }
   });
