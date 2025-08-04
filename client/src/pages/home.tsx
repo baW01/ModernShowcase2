@@ -20,6 +20,8 @@ export default function Home() {
   const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({
     queryKey: ["/api/products", sortBy],
     queryFn: () => fetch(`/api/products?sortBy=${sortBy}`).then(res => res.json()),
+    staleTime: 5 * 60 * 1000, // 5 minutes - cache products for better performance
+    refetchOnWindowFocus: false, // Don't refetch when window gets focus
   });
 
   const { data: settings, error: settingsError } = useQuery<Settings>({
@@ -64,6 +66,11 @@ export default function Home() {
   console.log('Products loading:', productsLoading);
   console.log('Filtered products:', filteredProducts);
   console.log('Available products:', availableProducts);
+  
+  // Performance monitoring
+  if (products.length > 0) {
+    console.log(`[Performance] Products loaded: ${products.length} items`);
+  }
 
   // Function to mix advertisements with products
   const mixAdvertisementsWithProducts = (products: Product[]) => {

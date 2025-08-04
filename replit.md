@@ -26,7 +26,7 @@ Preferred communication style: Simple, everyday language.
 - **Validation**: Zod schemas for request/response validation.
 - **Key Components**: Abstract storage interface, RESTful API endpoints for products and settings, Drizzle ORM database schema.
 - **Security Features**: JWT token-based authentication with protected API endpoints, rate limiting for various actions (login, product creation, requests, delete requests), Helmet.js for security headers, CORS configuration, Bcrypt for password hashing, environment variable usage. Admin users bypass rate limits.
-- **Performance Optimizations**: Lazy loading for images, server-side compression (gzip), HTTP caching headers, optimized TanStack Query settings, debounced view tracking, static asset caching, comprehensive database indexing (17 strategic indexes for optimal query performance), full-text search capabilities.
+- **Performance Optimizations**: Comprehensive performance optimization including: 17 strategic database indexes, multi-level HTTP caching (5-10 min), gzip compression (level 6), lazy loading with Intersection Observer, optimized TanStack Query settings, debounced view tracking, progressive image loading, full-text search capabilities, and performance monitoring with request timing logs.
 - **Key Features**: Sale verification system via secure tokens, enhanced image upload with compression and immediate upload.
 
 ### Overall System Design

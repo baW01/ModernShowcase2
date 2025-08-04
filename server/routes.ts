@@ -133,8 +133,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all products with optional sorting - PUBLIC endpoint (filtered for public view)
   app.get("/api/products", async (req, res) => {
     try {
+      // Add performance timing
+      const startTime = performance.now();
+      
       const sortBy = req.query.sortBy as 'popularity' | 'newest' | 'price_asc' | 'price_desc' | undefined;
       const products = await storage.getProducts(sortBy);
+      
+      const dbTime = performance.now();
+      console.log(`[Performance] DB query time: ${(dbTime - startTime).toFixed(2)}ms`);
       
       // Filter out sensitive data for public view
       const publicProducts = products.map(product => ({
@@ -156,6 +162,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // submitterEmail removed for privacy
       }));
       
+      const endTime = performance.now();
+      console.log(`[Performance] Total /api/products time: ${(endTime - startTime).toFixed(2)}ms`);
+      
       // Add cache headers for better performance
       res.set({
         'Cache-Control': 'public, max-age=300, stale-while-revalidate=600', // 5 minutes cache
@@ -165,6 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(publicProducts);
     } catch (error) {
+      console.error('Error fetching products:', error);
       res.status(500).json({ message: "Failed to fetch products" });
     }
   });
