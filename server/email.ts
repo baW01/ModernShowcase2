@@ -1,10 +1,26 @@
-import sgMail from '@sendgrid/mail';
+import nodemailer from 'nodemailer';
 import { generateDeleteRequestToken } from './hash-utils.js';
 
-// Initialize SendGrid
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
+// Configure SMTP transporter
+const createTransporter = () => {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn('SMTP configuration missing. Required: SMTP_HOST, SMTP_USER, SMTP_PASS');
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false // Accept self-signed certificates
+    }
+  });
+};
 
 export interface EmailParams {
   to: string;
@@ -15,13 +31,10 @@ export interface EmailParams {
 }
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.warn('SENDGRID_API_KEY not found, email not sent');
-    return false;
-  }
-
-  if (!process.env.FROM_EMAIL) {
-    console.warn('FROM_EMAIL not found, email not sent');
+  const transporter = createTransporter();
+  
+  if (!transporter) {
+    console.warn('SMTP transporter not configured, email not sent');
     return false;
   }
 
@@ -29,36 +42,40 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
   console.log(`Subject: ${params.subject}`);
 
   try {
-    const result = await sgMail.send({
-      to: params.to,
-      from: params.from,
-      subject: params.subject,
-      text: params.text,
-      html: params.html,
-      trackingSettings: {
-        clickTracking: {
-          enable: false,
-          enableText: false
-        },
-        openTracking: {
-          enable: false
-        }
+    // Verify SMTP connection
+    await transporter.verify();
+    console.log('SMTP server connection verified');
+
+    const mailOptions = {
+      from: `"Spotted GFC" <${params.from}>`, // sender address with display name
+      to: params.to, // list of receivers
+      subject: params.subject, // Subject line
+      text: params.text, // plain text body
+      html: params.html, // html body
+      headers: {
+        'X-Mailer': 'Spotted GFC Platform',
+        'X-Priority': '3' // Normal priority
       }
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${params.to}`, {
+      messageId: result.messageId,
+      response: result.response
     });
-    console.log(`Email sent successfully to ${params.to}`, result[0].statusCode);
     return true;
   } catch (error: any) {
-    console.error('SendGrid email error:', {
+    console.error('SMTP email error:', {
       message: error.message,
       code: error.code,
-      response: error.response?.body || 'No response body'
+      command: error.command || 'N/A'
     });
     return false;
   }
 }
 
 export function generateApprovalEmailHtml(productTitle: string, productId: number): string {
-  // Use custom domain instead of auto-detected Replit domains
+  // Use custom domain
   const baseUrl = 'https://spottedgfc.pl';
   
   // Generate secure token instead of using plain product ID

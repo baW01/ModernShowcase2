@@ -27,6 +27,7 @@ Preferred communication style: Simple, everyday language.
 - **Key Components**: Abstract storage interface, RESTful API endpoints for products and settings, Drizzle ORM database schema.
 - **Security Features**: JWT token-based authentication with protected API endpoints, rate limiting for various actions (login, product creation, requests, delete requests), Helmet.js for security headers, CORS configuration, Bcrypt for password hashing, environment variable usage. Admin users bypass rate limits.
 - **Performance Optimizations**: Comprehensive performance optimization including: 17 strategic database indexes, multi-level HTTP caching (5-10 min), gzip compression (level 6), lazy loading with Intersection Observer, optimized TanStack Query settings, debounced view tracking, progressive image loading, full-text search capabilities, and performance monitoring with request timing logs.
+- **Email System**: Full SMTP server implementation using Nodemailer with custom domain support (noreply@spottedgfc.pl). Supports Gmail SMTP, Mailgun, and Outlook. Automatic emails for product approval/rejection and sale verification. Cloudflare Email Routing configured for unlimited email receiving.
 - **Key Features**: Sale verification system via secure tokens, enhanced image upload with compression and immediate upload.
 
 ### Overall System Design
@@ -51,6 +52,7 @@ Preferred communication style: Simple, everyday language.
 - `express-rate-limit`: Rate limiting middleware
 - `helmet`: Security headers
 - `cors`: Cross-Origin Resource Sharing
+- `nodemailer`: SMTP email sending library
 
 ### Development Tools
 - `drizzle-kit`: Database migration and introspection tool
