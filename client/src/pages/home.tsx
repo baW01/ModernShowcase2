@@ -33,14 +33,14 @@ export default function Home() {
     refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 
-  // Debug: Log any errors
+  // Debug: Log any errors and data
   if (productsError) {
     console.error('Products error:', productsError);
   }
   if (settingsError) {
     console.error('Settings error:', settingsError);
   }
-
+  
   // Filter products based on search and filters
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -58,6 +58,12 @@ export default function Home() {
   const soldProducts = filteredProducts.filter(product => product.isSold);
 
   const categories = Array.from(new Set(products.map(p => p.category)));
+
+  // Debug: Log products data to help troubleshoot
+  console.log('Products data:', products);
+  console.log('Products loading:', productsLoading);
+  console.log('Filtered products:', filteredProducts);
+  console.log('Available products:', availableProducts);
 
   // Function to mix advertisements with products
   const mixAdvertisementsWithProducts = (products: Product[]) => {
