@@ -17,12 +17,15 @@ export default function Home() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [sortBy, setSortBy] = useState<'popularity' | 'newest' | 'price_asc' | 'price_desc'>('newest');
 
-  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({
+  const { data: productsResponse, isLoading: productsLoading, error: productsError } = useQuery<{products: Product[], pagination: any}>({
     queryKey: ["/api/products", sortBy],
-    queryFn: () => fetch(`/api/products?sortBy=${sortBy}`).then(res => res.json()),
+    queryFn: () => fetch(`/api/products?sortBy=${sortBy}&limit=20`).then(res => res.json()), // Load 20 products for faster loading
     staleTime: 5 * 60 * 1000, // 5 minutes - cache products for better performance
     refetchOnWindowFocus: false, // Don't refetch when window gets focus
+    retry: 1, // Only retry once for faster error handling
   });
+  
+  const products = productsResponse?.products || [];
 
   const { data: settings, error: settingsError } = useQuery<Settings>({
     queryKey: ["/api/settings"],
@@ -70,6 +73,7 @@ export default function Home() {
   // Performance monitoring
   if (products.length > 0) {
     console.log(`[Performance] Products loaded: ${products.length} items`);
+    console.log(`[Performance] Pagination info:`, productsResponse?.pagination);
   }
 
   // Function to mix advertisements with products

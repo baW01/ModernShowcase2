@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { optimizeImageUrls, logDataTransferSize } from "./image-optimizer";
 import { insertProductSchema, insertSettingsSchema, insertProductRequestSchema, insertCategorySchema, insertAdvertisementSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateToken, verifyPassword, authenticateToken, requireAdmin, authRateLimitConfig } from "./auth";
@@ -130,28 +131,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Get all products with optional sorting - PUBLIC endpoint (filtered for public view)
+  // Get all products with optional sorting - PUBLIC endpoint (filtered for public view) with pagination
   app.get("/api/products", async (req, res) => {
     try {
       // Add performance timing
       const startTime = performance.now();
       
       const sortBy = req.query.sortBy as 'popularity' | 'newest' | 'price_asc' | 'price_desc' | undefined;
-      const products = await storage.getProducts(sortBy);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20; // Default 20 products per page
+      const offset = (page - 1) * limit;
+      
+      const allProducts = await storage.getProducts(sortBy);
+      const totalProducts = allProducts.length;
+      const paginatedProducts = allProducts.slice(offset, offset + limit);
       
       const dbTime = performance.now();
       console.log(`[Performance] DB query time: ${(dbTime - startTime).toFixed(2)}ms`);
+      console.log(`[Performance] Returning ${paginatedProducts.length}/${totalProducts} products (page ${page})`);
       
-      // Filter out sensitive data for public view
-      const publicProducts = products.map(product => ({
+      // Filter out sensitive data for public view and optimize image URLs
+      const publicProducts = paginatedProducts.map(product => ({
         id: product.id,
         title: product.title,
-        description: product.description,
+        description: product.description.length > 200 ? product.description.substring(0, 200) + '...' : product.description, // Truncate long descriptions for list view
         price: product.price,
         categoryId: product.categoryId,
         category: product.category,
         imageUrl: product.imageUrl,
-        imageUrls: product.imageUrls,
+        // Optimize imageUrls for list view (reduce data transfer)
+        imageUrls: optimizeImageUrls(product.imageUrls, true),
         contactPhone: product.contactPhone,
         isSold: product.isSold,
         saleVerified: product.saleVerified,
@@ -168,11 +177,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add cache headers for better performance
       res.set({
         'Cache-Control': 'public, max-age=300, stale-while-revalidate=600', // 5 minutes cache
-        'ETag': `"products-${Date.now()}"`,
-        'Last-Modified': new Date().toUTCString()
+        'ETag': `"products-${page}-${limit}-${sortBy || 'default'}-${Date.now()}"`,
+        'Last-Modified': new Date().toUTCString(),
+        'X-Total-Count': totalProducts.toString(),
+        'X-Page': page.toString(),
+        'X-Per-Page': limit.toString()
       });
       
-      res.json(publicProducts);
+      const responseData = {
+        products: publicProducts,
+        pagination: {
+          page,
+          limit,
+          total: totalProducts,
+          hasMore: offset + limit < totalProducts
+        }
+      };
+      
+      // Log data transfer size for monitoring
+      logDataTransferSize('/api/products', responseData);
+      
+      res.json(responseData);
     } catch (error) {
       console.error('Error fetching products:', error);
       res.status(500).json({ message: "Failed to fetch products" });
@@ -208,7 +233,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         categoryId: product.categoryId,
         category: product.category,
         imageUrl: product.imageUrl,
-        imageUrls: product.imageUrls,
+        // Return all images for single product view
+        imageUrls: optimizeImageUrls(product.imageUrls, false),
         contactPhone: product.contactPhone,
         isSold: product.isSold,
         saleVerified: product.saleVerified,
