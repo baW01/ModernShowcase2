@@ -100,11 +100,12 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   // Prepare images array for gallery
+  // For list view, use placeholder since images are removed for performance
   const images = product.imageUrls && product.imageUrls.length > 0 
     ? product.imageUrls 
     : product.imageUrl 
       ? [product.imageUrl] 
-      : [];
+      : ['/api/placeholder-image.svg']; // Use placeholder for performance
 
   return (
     <div className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group ${product.isSold ? 'opacity-75' : ''}`}>

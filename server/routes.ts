@@ -69,6 +69,16 @@ function generateHTML(meta: HTMLMetaTags): string {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Add placeholder image endpoint for performance optimization
+  app.get("/api/placeholder-image.svg", (req, res) => {
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+    res.send(`<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#f0f0f0"/>
+      <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="14" fill="#999" text-anchor="middle" dy=".3em">Obraz</text>
+    </svg>`);
+  });
   // Create auth rate limiter
   const authLimiter = rateLimit(authRateLimitConfig);
 
@@ -158,9 +168,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: product.price,
         categoryId: product.categoryId,
         category: product.category,
-        imageUrl: product.imageUrl,
-        // Optimize imageUrls for list view (reduce data transfer)
-        imageUrls: optimizeImageUrls(product.imageUrls, true),
+        imageUrl: null, // Remove main image from list view for maximum performance
+        // Completely remove imageUrls for list view to drastically reduce data transfer
+        imageUrls: null, // Remove all images from list view for maximum performance
         contactPhone: product.contactPhone,
         isSold: product.isSold,
         saleVerified: product.saleVerified,

@@ -12,14 +12,14 @@ export function optimizeImageUrls(imageUrls: string[] | null, isListView = true)
   const limitedUrls = imageUrls.slice(0, maxImages);
 
   // If images are base64, replace large ones with placeholder for list view
-  return limitedUrls.map(url => {
-    if (url.startsWith('data:image/')) {
+  return limitedUrls.map((url, index) => {
+    if (url && url.startsWith('data:image/')) {
       const sizeEstimate = url.length * 0.75; // Rough base64 size estimation
       
-      if (isListView && sizeEstimate > 50 * 1024) { // Over 50KB for list view
-        console.warn(`[Performance] Large image detected (${Math.round(sizeEstimate / 1024)}KB) - using placeholder for list view`);
-        // Return a small placeholder for list view
-        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk9icmF6PC90ZXh0Pjwvc3ZnPg==';
+      if (isListView && sizeEstimate > 5 * 1024) { // Over 5KB for list view - extremely aggressive
+        console.warn(`[Performance] Large image detected (${Math.round(sizeEstimate / 1024)}KB) - replacing with placeholder for list view`);
+        // Return null to completely remove large images from list view
+        return null;
       }
       
       if (sizeEstimate > 500 * 1024) { // Over 500KB
