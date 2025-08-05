@@ -3,21 +3,21 @@ import { generateDeleteRequestToken } from './hash-utils.js';
 
 // Configure SMTP transporter
 const createTransporter = () => {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.warn('SMTP configuration missing. Required: SMTP_HOST, SMTP_USER, SMTP_PASS');
+  if (!process.env.GMAIL_ADDRESS || !process.env.SMTP_PASS) {
+    console.warn('SMTP configuration missing. Required: GMAIL_ADDRESS, SMTP_PASS');
     return null;
   }
 
+  // Use Gmail service with actual Gmail address for authentication
+  // but send emails from custom domain
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+    service: 'gmail',
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: process.env.GMAIL_ADDRESS, // Actual Gmail address for authentication
+      pass: process.env.SMTP_PASS, // Gmail App Password
     },
     tls: {
-      rejectUnauthorized: false // Accept self-signed certificates
+      rejectUnauthorized: false
     }
   });
 };
