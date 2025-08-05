@@ -36,9 +36,10 @@ export default function Product() {
   const { data: product, isLoading, error } = useQuery<Product>({
     queryKey: ['/api/products', productId],
     enabled: !!productId,
-    staleTime: 10 * 60 * 1000, // 10 minutes - cache individual products longer
+    staleTime: 30 * 60 * 1000, // 30 minutes - cache individual products longer
     refetchOnWindowFocus: false, // Don't refetch when window gets focus
     retry: 1, // Only retry once on failure for faster error handling
+    refetchOnMount: false, // Don't refetch if we have cached data
   });
 
   const { data: settings } = useQuery<{storeName?: string}>({

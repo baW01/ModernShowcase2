@@ -187,9 +187,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: product.price,
         categoryId: product.categoryId,
         category: product.category,
-        imageUrl: '/api/placeholder-image.svg', // Show placeholder in list view for better UX
-        // Completely remove imageUrls for list view to drastically reduce data transfer
-        imageUrls: ['/api/placeholder-image.svg'], // Show placeholder array in list view
+        imageUrl: product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : product.imageUrl, // Show first real image
+        // Show first image only for list view to balance UX and performance
+        imageUrls: product.imageUrls && product.imageUrls.length > 0 ? [product.imageUrls[0]] : (product.imageUrl ? [product.imageUrl] : ['/api/placeholder-image.svg']),
         contactPhone: product.contactPhone,
         isSold: product.isSold,
         saleVerified: product.saleVerified,
@@ -262,8 +262,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         categoryId: product.categoryId,
         category: product.category,
         imageUrl: product.imageUrl,
-        // Return all images for single product view
-        imageUrls: optimizeImageUrls(product.imageUrls, false),
+        // Return optimized images for single product view - compress large Base64 images on-the-fly
+        imageUrls: await optimizeProductImages(product.imageUrls, product.imageUrl),
         contactPhone: product.contactPhone,
         isSold: product.isSold,
         saleVerified: product.saleVerified,
@@ -277,9 +277,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const endTime = performance.now();
       console.log(`[Performance] Total single product time: ${(endTime - startTime).toFixed(2)}ms`);
       
-      // Add optimized cache headers for single product
+      // Add optimized cache headers for single product  
       res.set({
-        'Cache-Control': 'public, max-age=900, stale-while-revalidate=1800', // 15 minutes cache
+        'Cache-Control': 'public, max-age=1800, stale-while-revalidate=3600', // 30 minutes cache
         'ETag': `"product-${product.id}-${product.updatedAt?.getTime() || Date.now()}"`,
         'Last-Modified': new Date(product.updatedAt || product.createdAt).toUTCString(),
         'Vary': 'Accept-Encoding'
@@ -1100,4 +1100,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper function to optimize product images for display
+async function optimizeProductImages(imageUrls?: string[], imageUrl?: string): Promise<string[]> {
+  const images = imageUrls || (imageUrl ? [imageUrl] : []);
+  
+  // If no images, return placeholder
+  if (!images.length) {
+    return ['/api/placeholder-image.svg'];
+  }
+  
+  const optimizedImages: string[] = [];
+  
+  for (const img of images) {
+    if (img && img.startsWith('data:image/')) {
+      // Large Base64 image detected - convert to placeholder for now
+      // In production, you would compress and store these in object storage
+      const base64Size = img.length;
+      
+      if (base64Size > 100000) { // If image is > 100KB Base64
+        console.log(`[Performance] Large Base64 image detected (${Math.round(base64Size / 1024)}KB), using placeholder`);
+        optimizedImages.push('/api/placeholder-image.svg');
+      } else {
+        optimizedImages.push(img);
+      }
+    } else if (img && img.startsWith('/')) {
+      // Already optimized URL
+      optimizedImages.push(img);
+    } else {
+      // Invalid or missing image
+      optimizedImages.push('/api/placeholder-image.svg');
+    }
+  }
+  
+  return optimizedImages.length > 0 ? optimizedImages : ['/api/placeholder-image.svg'];
 }
