@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertProductRequestSchema, type InsertProductRequest } from "@shared/schema";
-import { MultipleImageUpload } from "@/components/multiple-image-upload";
+import { ImageUploadCompressed } from "@/components/image-upload-compressed";
 import { saveAutofillData, getAutofillData, clearAutofillData, hasAutofillData } from "@/lib/autofill-storage";
 
 const formSchema = insertProductRequestSchema.extend({
@@ -337,7 +337,7 @@ export function ProductRequestForm() {
                 <FormItem>
                   <FormLabel>Zdjęcia produktu (opcjonalne)</FormLabel>
                   <FormControl>
-                    <MultipleImageUpload 
+                    <ImageUploadCompressed 
                       onImagesUpload={handleImagesUpload}
                       currentImageUrls={field.value}
                       maxImages={5}

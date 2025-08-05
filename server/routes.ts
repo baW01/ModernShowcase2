@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { optimizeImageUrls, logDataTransferSize } from "./image-optimizer";
+import { ObjectStorageService } from "./objectStorage";
+import { base64ToBuffer, compressImageBuffer } from "./image-compression";
 import { insertProductSchema, insertSettingsSchema, insertProductRequestSchema, insertCategorySchema, insertAdvertisementSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateToken, verifyPassword, authenticateToken, requireAdmin, authRateLimitConfig } from "./auth";
@@ -79,6 +81,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="14" fill="#999" text-anchor="middle" dy=".3em">Obraz</text>
     </svg>`);
   });
+
+  // Serve public objects (images) from object storage
+  app.get("/public-objects/:filePath(*)", async (req, res) => {
+    const filePath = req.params.filePath;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Create auth rate limiter
   const authLimiter = rateLimit(authRateLimitConfig);
 
@@ -168,9 +187,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: product.price,
         categoryId: product.categoryId,
         category: product.category,
-        imageUrl: null, // Remove main image from list view for maximum performance
+        imageUrl: '/api/placeholder-image.svg', // Show placeholder in list view for better UX
         // Completely remove imageUrls for list view to drastically reduce data transfer
-        imageUrls: null, // Remove all images from list view for maximum performance
+        imageUrls: ['/api/placeholder-image.svg'], // Show placeholder array in list view
         contactPhone: product.contactPhone,
         isSold: product.isSold,
         saleVerified: product.saleVerified,
@@ -281,6 +300,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(products); // Return full data including submitterEmail
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  // Convert base64 images to compressed URLs
+  app.post("/api/images/compress", async (req, res) => {
+    try {
+      const { images } = req.body; // Array of base64 images
+      
+      if (!images || !Array.isArray(images)) {
+        return res.status(400).json({ message: "Images array is required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const compressedUrls: string[] = [];
+
+      for (const base64Image of images) {
+        if (typeof base64Image !== 'string' || !base64Image.startsWith('data:image/')) {
+          continue; // Skip invalid images
+        }
+
+        try {
+          // Convert base64 to buffer
+          const imageBuffer = base64ToBuffer(base64Image);
+          
+          // Compress the image
+          const compressedBuffer = await compressImageBuffer(imageBuffer);
+          
+          // Store in object storage and get URL
+          const publicUrl = await objectStorageService.storeCompressedImage(compressedBuffer, `image_${Date.now()}.jpg`);
+          compressedUrls.push(publicUrl);
+          
+          console.log(`[Image Compression] Compressed image: ${Math.round(imageBuffer.length / 1024)}KB -> ${Math.round(compressedBuffer.length / 1024)}KB`);
+        } catch (error) {
+          console.error('Error processing individual image:', error);
+          // Continue with other images
+        }
+      }
+
+      res.json({ compressedUrls });
+    } catch (error) {
+      console.error('Error compressing images:', error);
+      res.status(500).json({ message: "Failed to compress images" });
     }
   });
 

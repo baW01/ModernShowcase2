@@ -107,11 +107,15 @@ export function ProductCard({ product }: ProductCardProps) {
       ? [product.imageUrl] 
       : ['/api/placeholder-image.svg']; // Use placeholder for performance
 
+  // Always show at least one image - if no real images, show placeholder
+  const displayImages = images.filter(img => img && img.trim() !== '');
+  const finalImages = displayImages.length > 0 ? displayImages : ['/api/placeholder-image.svg'];
+
   return (
     <div className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group ${product.isSold ? 'opacity-75' : ''}`}>
       <div className="relative">
         <ImageGallery 
-          images={images}
+          images={finalImages}
           alt={product.title}
           className={`transition-transform duration-300 ${!product.isSold ? 'group-hover:scale-105' : ''}`}
         />

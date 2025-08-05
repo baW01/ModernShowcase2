@@ -14,7 +14,7 @@ import { queryClient } from "@/lib/queryClient";
 import { insertProductSchema } from "@shared/schema";
 import type { Product, InsertProduct } from "@shared/schema";
 import { z } from "zod";
-import { MultipleImageUpload } from "./multiple-image-upload";
+import { ImageUploadCompressed } from "./image-upload-compressed";
 
 const formSchema = insertProductSchema.extend({
   price: z.number().min(0.01, "Price must be greater than 0"),
@@ -232,7 +232,7 @@ export function EditProductModal({ product, isOpen, onClose }: EditProductModalP
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Zdjęcia produktu</label>
-              <MultipleImageUpload 
+              <ImageUploadCompressed 
                 onImagesUpload={handleImagesUpload}
                 currentImageUrls={imageUrls}
                 maxImages={5}
