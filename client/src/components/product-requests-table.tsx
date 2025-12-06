@@ -64,7 +64,9 @@ export function ProductRequestsTable({ requests }: ProductRequestsTableProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/product-requests"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
       // Invalidate public products cache so new products appear immediately
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({
+        predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === "/api/products",
+      });
       toast({
         title: "Sukces",
         description: "Produkt został dodany do katalogu",

@@ -21,8 +21,10 @@ export default function Home() {
   const { data: productsResponse, isLoading: productsLoading, error: productsError } = useQuery<{products: Product[], pagination: any}>({
     queryKey: ["/api/products", sortBy],
     queryFn: () => fetch(withApiBase(`/api/products?sortBy=${sortBy}&limit=20`)).then(res => res.json()), // Load 20 products for faster loading
-    staleTime: 5 * 60 * 1000, // 5 minutes - cache products for better performance
-    refetchOnWindowFocus: false, // Don't refetch when window gets focus
+    staleTime: 0, // always refetch to show newest products immediately
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     retry: 1, // Only retry once for faster error handling
   });
   

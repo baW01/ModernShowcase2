@@ -31,8 +31,10 @@ export function ProductsTable({ products }: ProductsTableProps) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] }); // refresh public cache
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"], exact: false });
+      queryClient.invalidateQueries({
+        predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === "/api/products",
+      }); // refresh public cache
       toast({
         title: "Sukces",
         description: "Produkt zostal zaktualizowany pomyslnie",
@@ -54,8 +56,10 @@ export function ProductsTable({ products }: ProductsTableProps) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] }); // refresh public cache
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"], exact: false });
+      queryClient.invalidateQueries({
+        predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === "/api/products",
+      }); // refresh public cache
       toast({
         title: "Sukces",
         description: "Produkt zostal usuniety pomyslnie",

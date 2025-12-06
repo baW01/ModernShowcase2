@@ -58,9 +58,11 @@ export function ProductForm() {
       });
       form.reset();
       setImageUrls([]);
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
-      // Invalidate public products cache so new products appear immediately
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"], exact: false });
+      // Invalidate public products cache so new products appear immediately (all variants)
+      queryClient.invalidateQueries({
+        predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === "/api/products",
+      });
     },
     onError: (error) => {
       toast({
