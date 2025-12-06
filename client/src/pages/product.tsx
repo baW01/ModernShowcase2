@@ -212,9 +212,14 @@ export default function Product() {
 
   const images = product.imageUrls && product.imageUrls.length > 0 
     ? product.imageUrls
+        .map((img) => {
+          const { thumb, full } = parseImagePair(img);
+          return full?.trim() || thumb?.trim();
+        })
+        .filter((img): img is string => Boolean(img))
     : product.imageUrl 
       ? [product.imageUrl] 
-      : [];
+      : ["/api/placeholder-image.svg"];
 
   return (
     <div className="min-h-screen bg-gray-50">

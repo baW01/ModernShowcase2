@@ -10,7 +10,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ImageGalleryProps {
   images?: string[];
@@ -174,6 +174,9 @@ export function ImageGallery({ images = [], alt, className }: ImageGalleryProps)
 
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
         <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Podgląd zdjęć: {alt}</DialogTitle>
+          </DialogHeader>
           <Carousel
             opts={{ loop: showControls, align: "center" }}
             className="w-full"
