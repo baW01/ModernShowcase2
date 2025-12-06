@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useId } from "react";
 import { cn } from "@/lib/utils";
 import { parseImagePair } from "@/lib/image-utils";
 import {
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { withApiBase } from "@/lib/queryClient";
 
 interface ImageGalleryProps {
   images?: string[];
@@ -21,6 +22,14 @@ interface ImageGalleryProps {
 const PLACEHOLDER = "/api/placeholder-image.svg";
 
 export function ImageGallery({ images = [], alt, className }: ImageGalleryProps) {
+  const descriptionId = useId();
+
+  const resolveSrc = (value: string) => {
+    if (!value) return PLACEHOLDER;
+    if (value.startsWith("data:")) return value;
+    return withApiBase(value);
+  };
+
   const normalizedImages = useMemo(() => {
     const source = images.length > 0 ? images : [PLACEHOLDER];
 
@@ -31,8 +40,8 @@ export function ImageGallery({ images = [], alt, className }: ImageGalleryProps)
 
       return {
         id: `${index}-${fullSrc}`,
-        full: fullSrc,
-        thumb: thumbSrc,
+        full: resolveSrc(fullSrc),
+        thumb: resolveSrc(thumbSrc),
       };
     });
   }, [images]);
@@ -173,10 +182,11 @@ export function ImageGallery({ images = [], alt, className }: ImageGalleryProps)
       )}
 
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-        <DialogContent className="max-w-5xl">
+        <DialogContent className="max-w-5xl" aria-describedby={descriptionId}>
           <DialogHeader>
             <DialogTitle className="sr-only">Podgląd zdjęć: {alt}</DialogTitle>
           </DialogHeader>
+          <p id={descriptionId} className="sr-only">Galeria zdjęć produktu</p>
           <Carousel
             opts={{ loop: showControls, align: "center" }}
             className="w-full"
