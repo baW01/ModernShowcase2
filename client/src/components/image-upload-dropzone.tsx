@@ -3,6 +3,7 @@ import { CloudUpload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { withApiBase } from "@/lib/queryClient";
 
 interface ImageUploadDropzoneProps {
   onImageUpload: (url: string) => void;
@@ -147,7 +148,7 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
       
       // Upload to server immediately
       try {
-        const response = await fetch('/api/upload-image', {
+        const response = await fetch(withApiBase('/api/upload-image'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

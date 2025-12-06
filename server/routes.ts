@@ -1081,6 +1081,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Server-side rendering for product pages with Open Graph meta tags
   app.get("/product/:id", async (req, res) => {
+    const publicBaseUrl = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
     try {
       const productId = parseInt(req.params.id);
       const product = await storage.getProduct(productId);
@@ -1102,7 +1103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const title = `${product.title} - ${product.category} | ${settings?.storeName || 'Spotted GFC'}`;
       const description = `${product.description.substring(0, 155)}... Cena: ${(product.price / 100).toFixed(2)} zł`;
       const ogImage = product.imageUrls?.[0] || product.imageUrl || '';
-      const ogUrl = `https://spottedgfc.pl/product/${productId}`;
+      const ogUrl = `${publicBaseUrl}/product/${productId}`;
 
       res.send(generateHTML({
         title,
@@ -1122,7 +1123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ogTitle: "Błąd serwera",
         ogDescription: "Wystąpił błąd podczas ładowania strony.",
         ogImage: "",
-        ogUrl: `https://spottedgfc.pl/product/${req.params.id}`
+        ogUrl: `${publicBaseUrl}/product/${req.params.id}`
       }));
     }
   });

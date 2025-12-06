@@ -10,6 +10,7 @@ import { AdvertisementCard } from "@/components/advertisement-card";
 import type { Product, Settings, Advertisement } from "@shared/schema";
 import { useState } from "react";
 import { Link } from "wouter";
+import { withApiBase } from "@/lib/queryClient";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,7 +20,7 @@ export default function Home() {
 
   const { data: productsResponse, isLoading: productsLoading, error: productsError } = useQuery<{products: Product[], pagination: any}>({
     queryKey: ["/api/products", sortBy],
-    queryFn: () => fetch(`/api/products?sortBy=${sortBy}&limit=20`).then(res => res.json()), // Load 20 products for faster loading
+    queryFn: () => fetch(withApiBase(`/api/products?sortBy=${sortBy}&limit=20`)).then(res => res.json()), // Load 20 products for faster loading
     staleTime: 5 * 60 * 1000, // 5 minutes - cache products for better performance
     refetchOnWindowFocus: false, // Don't refetch when window gets focus
     retry: 1, // Only retry once for faster error handling
@@ -38,14 +39,16 @@ export default function Home() {
     refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 
-  // Debug: Log any errors and data
-  if (productsError) {
-    console.error('Products error:', productsError);
+  // Debug: Log any errors and data (only in development)
+  if (import.meta.env.DEV) {
+    if (productsError) {
+      console.error('Products error:', productsError);
+    }
+    if (settingsError) {
+      console.error('Settings error:', settingsError);
+    }
   }
-  if (settingsError) {
-    console.error('Settings error:', settingsError);
-  }
-  
+
   // Filter products based on search and filters
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -64,16 +67,16 @@ export default function Home() {
 
   const categories = Array.from(new Set(products.map(p => p.category)));
 
-  // Debug: Log products data to help troubleshoot
-  console.log('Products data:', products);
-  console.log('Products loading:', productsLoading);
-  console.log('Filtered products:', filteredProducts);
-  console.log('Available products:', availableProducts);
-  
-  // Performance monitoring
-  if (products.length > 0) {
-    console.log(`[Performance] Products loaded: ${products.length} items`);
-    console.log(`[Performance] Pagination info:`, productsResponse?.pagination);
+  // Debug: Log products data to help troubleshoot (only in development)
+  if (import.meta.env.DEV) {
+    console.log('Products data:', products);
+    console.log('Products loading:', productsLoading);
+    console.log('Filtered products:', filteredProducts);
+    console.log('Available products:', availableProducts);
+    if (products.length > 0) {
+      console.log(`[Performance] Products loaded: ${products.length} items`);
+      console.log(`[Performance] Pagination info:`, productsResponse?.pagination);
+    }
   }
 
   // Function to mix advertisements with products

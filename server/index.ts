@@ -38,17 +38,19 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'"].concat(typeof allowedOrigin === 'string' ? [allowedOrigin] : []),
       fontSrc: ["'self'"],
     },
   },
 }));
 
 // CORS configuration
+const allowedOrigin = process.env.NODE_ENV === 'production'
+  ? (process.env.FRONTEND_URL || process.env.PUBLIC_BASE_URL || 'http://195.117.36.97')
+  : true;
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL || 'https://your-domain.com' 
-    : true,
+  origin: allowedOrigin,
   credentials: true,
 }));
 

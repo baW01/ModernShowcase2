@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { withApiBase } from "@/lib/queryClient";
 
 export default function VerifySale() {
   const [, setLocation] = useLocation();
@@ -41,7 +42,7 @@ export default function VerifySale() {
   const validateToken = async (token: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/validate-sale-token', {
+      const response = await fetch(withApiBase('/api/validate-sale-token'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ export default function VerifySale() {
     try {
       setIsLoading(true);
       
-      const response = await fetch(`/api/products/${productId}/verify-sale`, {
+      const response = await fetch(withApiBase(`/api/products/${productId}/verify-sale`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

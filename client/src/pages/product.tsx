@@ -10,6 +10,7 @@ import { Share, ArrowLeft, Phone, Eye, Store } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { parseImagePair } from "@/lib/image-utils";
+import { withApiBase } from "@/lib/queryClient";
 
 interface Product {
   id: number;
@@ -54,7 +55,7 @@ export default function Product() {
     if (productId && product) {
       // Debounce view tracking to avoid multiple requests
       const timer = setTimeout(() => {
-        fetch(`/api/products/${productId}/view`, {
+        fetch(withApiBase(`/api/products/${productId}/view`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         }).catch(console.error);
@@ -124,7 +125,7 @@ export default function Product() {
   const handleContactClick = async () => {
     // Record click
     if (productId) {
-      fetch(`/api/products/${productId}/click`, {
+      fetch(withApiBase(`/api/products/${productId}/click`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       }).catch(console.error);

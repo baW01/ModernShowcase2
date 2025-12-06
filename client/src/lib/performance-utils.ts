@@ -89,7 +89,7 @@ export class APIBatcher {
     // Process all requests in parallel
     const promises = batch.map(async ({ url, options, resolve, reject }) => {
       try {
-        const response = await fetch(url, options);
+        const response = await fetch(withApiBase(url), options);
         const data = await response.json();
         resolve(data);
       } catch (error) {
@@ -140,3 +140,4 @@ export function getOptimalImageQuality(): 'low' | 'medium' | 'high' {
   
   return 'high';
 }
+import { withApiBase } from "@/lib/queryClient";

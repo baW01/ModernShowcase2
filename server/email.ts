@@ -1,6 +1,8 @@
 import sgMail from '@sendgrid/mail';
 import { generateDeleteRequestToken } from './hash-utils.js';
 
+const publicBaseUrl = process.env.PUBLIC_BASE_URL || 'http://195.117.36.97';
+
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -58,8 +60,7 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
 }
 
 export function generateApprovalEmailHtml(productTitle: string, productId: number): string {
-  // Use custom domain instead of auto-detected Replit domains
-  const baseUrl = 'https://spottedgfc.pl';
+  const baseUrl = publicBaseUrl;
   
   // Generate secure token instead of using plain product ID
   const secureToken = generateDeleteRequestToken(productId);
@@ -103,7 +104,7 @@ export function generateApprovalEmailHtml(productTitle: string, productId: numbe
         </div>
         <div class="footer">
           <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
-          <p>© 2025 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
+          <p>© 2025 Spotted GFC - <a href="${baseUrl}">${baseUrl.replace(/^https?:\/\//, '')}</a></p>
         </div>
       </div>
     </body>
@@ -112,6 +113,7 @@ export function generateApprovalEmailHtml(productTitle: string, productId: numbe
 }
 
 export function generateDeleteRequestEmailHtml(productTitle: string, reason?: string): string {
+  const baseUrl = publicBaseUrl;
   return `
     <!DOCTYPE html>
     <html>
@@ -143,7 +145,7 @@ export function generateDeleteRequestEmailHtml(productTitle: string, reason?: st
         </div>
         <div class="footer">
           <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
-          <p>© 2025 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
+          <p>© 2025 Spotted GFC - <a href="${baseUrl}">${baseUrl.replace(/^https?:\/\//, '')}</a></p>
         </div>
       </div>
     </body>
@@ -152,6 +154,7 @@ export function generateDeleteRequestEmailHtml(productTitle: string, reason?: st
 }
 
 export function generateRejectionEmailHtml(productTitle: string, reason: string): string {
+  const baseUrl = publicBaseUrl;
   return `
     <!DOCTYPE html>
     <html>
@@ -187,7 +190,7 @@ export function generateRejectionEmailHtml(productTitle: string, reason: string)
         </div>
         <div class="footer">
           <p>Ten email został wysłany automatycznie. Prosimy nie odpowiadać na tę wiadomość.</p>
-          <p>© 2025 Spotted GFC - <a href="https://spottedgfc.pl">spottedgfc.pl</a></p>
+          <p>© 2025 Spotted GFC - <a href="${baseUrl}">${baseUrl.replace(/^https?:\/\//, '')}</a></p>
         </div>
       </div>
     </body>

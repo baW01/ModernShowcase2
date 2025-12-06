@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, withApiBase } from "@/lib/queryClient";
 
 const TOKEN_KEY = "admin_jwt_token";
 
@@ -32,7 +32,7 @@ export function useAdminAuth() {
       }
 
       // Verify token with backend
-      const response = await fetch("/api/auth/verify", {
+      const response = await fetch(withApiBase("/api/auth/verify"), {
         headers: {
           "Authorization": `Bearer ${token}`
         }
