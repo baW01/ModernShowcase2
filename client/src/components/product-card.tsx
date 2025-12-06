@@ -8,6 +8,7 @@ import { ContactModal } from "./contact-modal";
 import { ImageGallery } from "./image-gallery";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { parseImagePair } from "@/lib/image-utils";
 
 interface ProductCardProps {
   product: Product;
@@ -17,6 +18,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const hasPhone = !!product.contactPhone?.trim();
   
   // Track view when component mounts (debounced)
   useEffect(() => {
@@ -41,6 +43,15 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const handleContact = async () => {
+    if (!hasPhone) {
+      toast({
+        title: "Brak numeru",
+        description: "Ten sprzedajŽcy nie poda‘' numeru telefonu.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Track contact click
     try {
       await apiRequest(`/api/products/${product.id}/click`, {
@@ -102,7 +113,7 @@ export function ProductCard({ product }: ProductCardProps) {
   // Prepare images array for gallery
   // For list view, use placeholder since images are removed for performance
   const images = product.imageUrls && product.imageUrls.length > 0 
-    ? product.imageUrls 
+    ? product.imageUrls.map((img) => parseImagePair(img).thumb || parseImagePair(img).full)
     : product.imageUrl 
       ? [product.imageUrl] 
       : ['/api/placeholder-image.svg']; // Use placeholder for performance
@@ -201,7 +212,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 <Check className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 Sprzedane
               </Button>
-            ) : (
+            ) : hasPhone ? (
               <Button 
                 onClick={handleContact}
                 className="bg-accent hover:bg-orange-600 text-white w-full sm:w-auto text-xs sm:text-sm px-2 sm:px-3"
@@ -209,6 +220,15 @@ export function ProductCard({ product }: ProductCardProps) {
               >
                 <Phone className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 Kontakt
+              </Button>
+            ) : (
+              <Button 
+                disabled
+                variant="outline"
+                className="w-full sm:w-auto text-xs sm:text-sm px-2 sm:px-3"
+                size="sm"
+              >
+                Brak telefonu
               </Button>
             )}
           </div>

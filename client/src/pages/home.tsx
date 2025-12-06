@@ -78,12 +78,16 @@ export default function Home() {
 
   // Function to mix advertisements with products
   const mixAdvertisementsWithProducts = (products: Product[]) => {
-    if (advertisements.length === 0 || products.length === 0) {
+    if (advertisements.length === 0) {
       return products;
+    }
+    if (products.length === 0) {
+      return advertisements;
     }
 
     const mixed: (Product | Advertisement)[] = [];
     let adIndex = 0;
+    let adInserted = false;
     
     products.forEach((product, index) => {
       mixed.push(product);
@@ -92,8 +96,14 @@ export default function Home() {
       if ((index + 1) % 6 === 0 && adIndex < advertisements.length) {
         mixed.push(advertisements[adIndex]);
         adIndex = (adIndex + 1) % advertisements.length; // Cycle through ads
+        adInserted = true;
       }
     });
+
+    // If the list is short and no ad was inserted, append one ad
+    if (!adInserted && advertisements.length > 0) {
+      mixed.push(advertisements[0]);
+    }
 
     return mixed;
   };
@@ -238,7 +248,7 @@ export default function Home() {
               </div>
             </div>
 
-            {availableProducts.length === 0 ? (
+            {mixedAvailableItems.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500">Nie znaleziono dostępnych produktów.</p>
               </div>

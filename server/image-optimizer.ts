@@ -12,7 +12,7 @@ export function optimizeImageUrls(imageUrls: string[] | null, isListView = true)
   const limitedUrls = imageUrls.slice(0, maxImages);
 
   // If images are base64, replace large ones with placeholder for list view
-  return limitedUrls.map((url, index) => {
+  const optimized = limitedUrls.map((url, index) => {
     if (url && url.startsWith('data:image/')) {
       const sizeEstimate = url.length * 0.75; // Rough base64 size estimation
       
@@ -28,6 +28,9 @@ export function optimizeImageUrls(imageUrls: string[] | null, isListView = true)
     }
     return url;
   });
+
+  const filtered = optimized.filter((url): url is string => Boolean(url));
+  return filtered.length ? filtered : null;
 }
 
 export function estimateDataSize(data: any): number {

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { parseImagePair } from "@/lib/image-utils";
 
 interface ImageUploadCompressedProps {
   onImagesUpload: (urls: string[]) => void;
@@ -147,7 +148,7 @@ export function ImageUploadCompressed({
           body: JSON.stringify({ images: compressedBase64Images }),
         });
         
-        const { compressedUrls } = response;
+        const { compressedUrls } = response as { compressedUrls: string[] };
         const updatedUrls = [...imageUrls, ...compressedUrls];
         setImageUrls(updatedUrls);
         onImagesUpload(updatedUrls);
@@ -278,7 +279,7 @@ export function ImageUploadCompressed({
             <div key={index} className="relative group">
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img
-                  src={url}
+                  src={parseImagePair(url).thumb || parseImagePair(url).full}
                   alt={`Zdjęcie ${index + 1}`}
                   className="w-full h-full object-cover"
                   onError={(e) => {

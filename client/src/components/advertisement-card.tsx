@@ -12,26 +12,45 @@ interface AdvertisementCardProps {
 
 export function AdvertisementCard({ advertisement }: AdvertisementCardProps) {
   const [viewTracked, setViewTracked] = useState(false);
+  const viewStorageKey = `ad_view_${advertisement.id}`;
 
-  // Track view when component mounts
+  // Track view when component mounts (once per 6h via localStorage)
   useEffect(() => {
-    if (!viewTracked) {
-      const trackView = async () => {
-        try {
-          await apiRequest(`/api/advertisements/${advertisement.id}/view`, {
-            method: 'POST',
-          });
-          setViewTracked(true);
-        } catch (error) {
-          // Ignore errors, don't block view
-        }
-      };
-      
-      // Debounce view tracking
-      const timer = setTimeout(trackView, 1000);
-      return () => clearTimeout(timer);
+    if (viewTracked) return;
+
+    const lastView = (() => {
+      try {
+        return localStorage.getItem(viewStorageKey);
+      } catch {
+        return null;
+      }
+    })();
+
+    const sixHoursMs = 6 * 60 * 60 * 1000;
+    if (lastView && Date.now() - Number(lastView) < sixHoursMs) {
+      setViewTracked(true);
+      return;
     }
-  }, [advertisement.id, viewTracked]);
+
+    const trackView = async () => {
+      try {
+        await apiRequest(`/api/advertisements/${advertisement.id}/view`, {
+          method: 'POST',
+        });
+        try {
+          localStorage.setItem(viewStorageKey, String(Date.now()));
+        } catch {
+          // ignore storage errors
+        }
+        setViewTracked(true);
+      } catch {
+        // Ignore errors, don't block render
+      }
+    };
+    
+    const timer = setTimeout(trackView, 800);
+    return () => clearTimeout(timer);
+  }, [advertisement.id, viewStorageKey, viewTracked]);
 
   const handleClick = async () => {
     try {

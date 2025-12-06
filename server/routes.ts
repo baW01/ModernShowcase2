@@ -11,6 +11,9 @@ import { validateProductToken } from "./hash-utils";
 import rateLimit from "express-rate-limit";
 import { readFileSync } from "fs";
 import { join } from "path";
+import fs from "fs";
+import path from "path";
+import { randomUUID } from "crypto";
 
 interface HTMLMetaTags {
   title: string;
@@ -180,21 +183,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[Performance] Returning ${paginatedProducts.length}/${totalProducts} products (page ${page})`);
       
       // Filter out sensitive data for public view and optimize image URLs
-      const publicProducts = paginatedProducts.map(product => ({
-        id: product.id,
-        title: product.title,
-        description: product.description.length > 200 ? product.description.substring(0, 200) + '...' : product.description, // Truncate long descriptions for list view
-        price: product.price,
-        categoryId: product.categoryId,
-        category: product.category,
-        imageUrl: product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : product.imageUrl, // Show first real image
-        // Show first image only for list view to balance UX and performance
-        imageUrls: product.imageUrls && product.imageUrls.length > 0 ? [product.imageUrls[0]] : (product.imageUrl ? [product.imageUrl] : ['/api/placeholder-image.svg']),
-        contactPhone: product.contactPhone,
-        isSold: product.isSold,
-        saleVerified: product.saleVerified,
-        views: product.views,
-        clicks: product.clicks,
+        const publicProducts = paginatedProducts.map(product => ({
+          id: product.id,
+          title: product.title,
+          description: product.description.length > 200 ? product.description.substring(0, 200) + '...' : product.description, // Truncate long descriptions for list view
+          price: product.price,
+          categoryId: product.categoryId,
+          category: product.category,
+          imageUrl: product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : product.imageUrl, // Show first real image
+          // Show first image only for list view to balance UX and performance
+          imageUrls: product.imageUrls && product.imageUrls.length > 0 ? [product.imageUrls[0]] : (product.imageUrl ? [product.imageUrl] : ['/api/placeholder-image.svg']),
+          contactPhone: product.contactPhone,
+          isSold: product.isSold,
+          saleVerified: product.saleVerified,
+          views: product.views,
+          clicks: product.clicks,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt
         // submitterEmail removed for privacy
@@ -263,7 +266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: product.category,
         imageUrl: product.imageUrl,
         // Return optimized images for single product view - compress large Base64 images on-the-fly
-        imageUrls: await optimizeProductImages(product.imageUrls, product.imageUrl),
+        imageUrls: await optimizeProductImages(product.imageUrls, product.imageUrl ?? undefined),
         contactPhone: product.contactPhone,
         isSold: product.isSold,
         saleVerified: product.saleVerified,
@@ -314,6 +317,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const objectStorageService = new ObjectStorageService();
       const compressedUrls: string[] = [];
+      const localUploadsDir = path.resolve(process.cwd(), "public", "uploads");
+      fs.mkdirSync(localUploadsDir, { recursive: true });
+      const storageConfigured = Boolean(process.env.PUBLIC_OBJECT_SEARCH_PATHS && process.env.PRIVATE_OBJECT_DIR);
 
       for (const base64Image of images) {
         if (typeof base64Image !== 'string' || !base64Image.startsWith('data:image/')) {
@@ -323,15 +329,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Convert base64 to buffer
           const imageBuffer = base64ToBuffer(base64Image);
+
+          // Create both thumbnail and full-size variants
+          const thumbBuffer = await compressImageBuffer(imageBuffer, 800, 75);
+          const fullBuffer = await compressImageBuffer(imageBuffer, 1600, 85);
+          const id = randomUUID();
+          const thumbName = `thumb_${id}.jpg`;
+          const fullName = `full_${id}.jpg`;
+
+          // Store locally (works without external object storage)
+          const thumbPath = path.join(localUploadsDir, thumbName);
+          const fullPath = path.join(localUploadsDir, fullName);
+          await fs.promises.writeFile(thumbPath, thumbBuffer);
+          await fs.promises.writeFile(fullPath, fullBuffer);
+
+          const thumbUrl = `/uploads/${thumbName}`;
+          const fullUrl = `/uploads/${fullName}`;
+
+          // If object storage is configured, also copy there and prefer that URL
+          if (storageConfigured) {
+            try {
+              const storedThumb = await objectStorageService.storeCompressedImage(thumbBuffer, thumbName);
+              const storedFull = await objectStorageService.storeCompressedImage(fullBuffer, fullName);
+              compressedUrls.push(`${storedThumb}|${storedFull}`);
+            } catch (storageErr) {
+              console.warn("[Image Compression] Object storage upload failed, falling back to local URLs", storageErr);
+              compressedUrls.push(`${thumbUrl}|${fullUrl}`);
+            }
+          } else {
+            compressedUrls.push(`${thumbUrl}|${fullUrl}`);
+          }
           
-          // Compress the image
-          const compressedBuffer = await compressImageBuffer(imageBuffer);
-          
-          // Store in object storage and get URL
-          const publicUrl = await objectStorageService.storeCompressedImage(compressedBuffer, `image_${Date.now()}.jpg`);
-          compressedUrls.push(publicUrl);
-          
-          console.log(`[Image Compression] Compressed image: ${Math.round(imageBuffer.length / 1024)}KB -> ${Math.round(compressedBuffer.length / 1024)}KB`);
+          console.log(`[Image Compression] Saved variants thumb=${thumbUrl} full=${fullUrl}`);
         } catch (error) {
           console.error('Error processing individual image:', error);
           // Continue with other images
@@ -1103,8 +1132,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 // Helper function to optimize product images for display
-async function optimizeProductImages(imageUrls?: string[], imageUrl?: string): Promise<string[]> {
-  const images = imageUrls || (imageUrl ? [imageUrl] : []);
+async function optimizeProductImages(imageUrls?: (string | null)[] | null, imageUrl?: string): Promise<string[]> {
+  const imagesFromList = (imageUrls ?? []).filter((img): img is string => Boolean(img));
+  const images = imagesFromList.length ? imagesFromList : (imageUrl ? [imageUrl] : []);
   
   // If no images, return placeholder
   if (!images.length) {

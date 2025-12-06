@@ -128,9 +128,18 @@ export function CategoriesManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold">Zarządzanie kategoriami</h3>
-        <Dialog open={isAddOpen || !!editingCategory} onOpenChange={closeDialog}>
+        <Dialog 
+          open={isAddOpen || !!editingCategory} 
+          onOpenChange={(open) => {
+            if (!open) {
+              closeDialog();
+            } else {
+              setIsAddOpen(true);
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={() => setIsAddOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Dodaj kategorię
             </Button>
@@ -169,6 +178,7 @@ export function CategoriesManagement() {
                           placeholder="Opisz kategorię..." 
                           className="min-h-[100px]"
                           {...field} 
+                          value={field.value ?? ""}
                         />
                       </FormControl>
                       <FormMessage />

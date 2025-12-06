@@ -223,9 +223,13 @@ export class DatabaseStorage implements IStorage {
 
   async createProductRequest(insertRequest: InsertProductRequest): Promise<ProductRequest> {
     try {
+      const payload = {
+        ...insertRequest,
+        submittedAt: new Date().toISOString(),
+      };
       const [request] = await db
         .insert(productRequests)
-        .values(insertRequest)
+        .values(payload)
         .returning();
       return request;
     } catch (error) {
@@ -265,31 +269,29 @@ export class DatabaseStorage implements IStorage {
   // Product Statistics
   async incrementProductViews(productId: number, ipAddress?: string, userAgent?: string): Promise<void> {
     try {
-      // Check if this IP already viewed this product
+      // Limit counting to one view per IP per product per 24h
       if (ipAddress) {
         const existingView = await db
-          .select()
+          .select({ id: productViews.id })
           .from(productViews)
           .where(and(
             eq(productViews.productId, productId),
-            eq(productViews.ipAddress, ipAddress)
+            eq(productViews.ipAddress, ipAddress),
+            sql`${productViews.viewedAt} > now() - interval '24 hours'`
           ))
           .limit(1);
         
         if (existingView.length > 0) {
-          // IP already viewed this product, don't count again
           return;
         }
       }
 
-      // Log the view
       await db.insert(productViews).values({
         productId,
         ipAddress,
         userAgent,
       });
 
-      // Increment the view count on the product
       await db
         .update(products)
         .set({ views: sql`${products.views} + 1` })
@@ -302,31 +304,29 @@ export class DatabaseStorage implements IStorage {
 
   async incrementProductClicks(productId: number, ipAddress?: string, userAgent?: string): Promise<void> {
     try {
-      // Check if this IP already clicked on this product
+      // Limit counting to one click per IP per product per 24h
       if (ipAddress) {
         const existingClick = await db
-          .select()
+          .select({ id: productClicks.id })
           .from(productClicks)
           .where(and(
             eq(productClicks.productId, productId),
-            eq(productClicks.ipAddress, ipAddress)
+            eq(productClicks.ipAddress, ipAddress),
+            sql`${productClicks.clickedAt} > now() - interval '24 hours'`
           ))
           .limit(1);
         
         if (existingClick.length > 0) {
-          // IP already clicked on this product, don't count again
           return;
         }
       }
 
-      // Log the click
       await db.insert(productClicks).values({
         productId,
         ipAddress,
         userAgent,
       });
 
-      // Increment the click count on the product
       await db
         .update(products)
         .set({ clicks: sql`${products.clicks} + 1` })

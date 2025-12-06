@@ -204,7 +204,12 @@ export function EditProductModal({ product, isOpen, onClose }: EditProductModalP
                   <FormItem>
                     <FormLabel>Numer telefonu kontaktowego</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="+48 123 456 789" {...field} />
+                      <Input
+                        type="tel"
+                        placeholder="+48 123 456 789"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

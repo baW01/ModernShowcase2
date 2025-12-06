@@ -5,11 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit, CheckCircle, Undo, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { EditProductModal } from "./edit-product-modal";
 import type { Product } from "@shared/schema";
 import noImagePlaceholder from "@/assets/no-image-placeholder.svg";
+import { parseImagePair } from "@/lib/image-utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ImageGallery } from "@/components/image-gallery";
 
 interface ProductsTableProps {
   products: Product[];
@@ -18,6 +20,7 @@ interface ProductsTableProps {
 export function ProductsTable({ products }: ProductsTableProps) {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
   const { toast } = useToast();
 
   const updateProductMutation = useMutation({
@@ -29,17 +32,16 @@ export function ProductsTable({ products }: ProductsTableProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
-      // Invalidate public products cache so changes appear immediately
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] }); // refresh public cache
       toast({
         title: "Sukces",
-        description: "Produkt został zaktualizowany pomyślnie",
+        description: "Produkt zostal zaktualizowany pomyslnie",
       });
     },
     onError: (error) => {
       toast({
-        title: "Błąd",
-        description: error.message || "Nie udało się zaktualizować produktu",
+        title: "Blad",
+        description: error.message || "Nie udalo sie zaktualizowac produktu",
         variant: "destructive",
       });
     },
@@ -53,17 +55,16 @@ export function ProductsTable({ products }: ProductsTableProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
-      // Invalidate public products cache so deleted products disappear immediately
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] }); // refresh public cache
       toast({
         title: "Sukces",
-        description: "Produkt został usunięty pomyślnie",
+        description: "Produkt zostal usuniety pomyslnie",
       });
     },
     onError: (error) => {
       toast({
-        title: "Błąd",
-        description: error.message || "Nie udało się usunąć produktu",
+        title: "Blad",
+        description: error.message || "Nie udalo sie usunac produktu",
         variant: "destructive",
       });
     },
@@ -87,19 +88,34 @@ export function ProductsTable({ products }: ProductsTableProps) {
   };
 
   const deleteProduct = (id: number) => {
-    if (confirm("Czy na pewno chcesz usunąć ten produkt?")) {
+    if (confirm("Czy na pewno chcesz usunac ten produkt?")) {
       deleteProductMutation.mutate(id);
     }
   };
 
   const formatPrice = (priceInCents: number) => {
-    return `${(priceInCents / 100).toFixed(2)} zł`;
+    return `${(priceInCents / 100).toFixed(2)} zl`;
+  };
+
+  const getPrimaryImage = (product: Product) => {
+    if (product.imageUrls && product.imageUrls.length > 0) {
+      const { thumb, full } = parseImagePair(product.imageUrls[0]);
+      return thumb || full || noImagePlaceholder;
+    }
+    return product.imageUrl || noImagePlaceholder;
+  };
+
+  const getAllImages = (product: Product) => {
+    if (product.imageUrls && product.imageUrls.length > 0) {
+      return product.imageUrls;
+    }
+    return product.imageUrl ? [product.imageUrl] : [];
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Zarządzanie produktami</CardTitle>
+        <CardTitle>Zarzadzanie produktami</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -129,11 +145,18 @@ export function ProductsTable({ products }: ProductsTableProps) {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <img
-                          className="h-10 w-10 rounded-lg object-cover"
-                          src={product.imageUrl || noImagePlaceholder}
-                          alt={product.title}
-                        />
+                        <button
+                          type="button"
+                          className="h-10 w-10 rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                          onClick={() => setPreviewProduct(product)}
+                          aria-label={`Podglad zdjecia ${product.title}`}
+                        >
+                          <img
+                            className="h-full w-full object-cover"
+                            src={getPrimaryImage(product)}
+                            alt={product.title}
+                          />
+                        </button>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">{product.title}</div>
@@ -149,7 +172,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Badge variant={product.isSold ? "secondary" : "default"}>
-                      {product.isSold ? "Sprzedane" : "Dostępne"}
+                      {product.isSold ? "Sprzedane" : "Dostepne"}
                     </Badge>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -188,12 +211,26 @@ export function ProductsTable({ products }: ProductsTableProps) {
           </table>
         </div>
       </CardContent>
-      
+
       <EditProductModal
         product={editingProduct}
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
       />
+
+      <Dialog open={!!previewProduct} onOpenChange={(open) => !open && setPreviewProduct(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Zdjecia: {previewProduct?.title}</DialogTitle>
+          </DialogHeader>
+          {previewProduct && (
+            <ImageGallery
+              images={getAllImages(previewProduct)}
+              alt={previewProduct.title}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

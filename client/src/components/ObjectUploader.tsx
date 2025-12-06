@@ -73,16 +73,16 @@ export function ObjectUploader({
         proudlyDisplayPoweredByUppy={false}
         locale={{
           strings: {
-            dropPasteFiles: 'Przeciągnij pliki tutaj lub %{browse}',
-            browse: 'wybierz',
+            dropPasteFiles: 'Przeciągnij pliki tutaj lub %{browseFiles}',
+            browseFiles: 'wybierz',
             uploadComplete: 'Przesyłanie zakończone',
             addMoreFiles: 'Dodaj więcej plików',
             removeFile: 'Usuń plik',
             editFile: 'Edytuj plik',
             cancel: 'Anuluj',
             done: 'Gotowe',
-          }
-        }}
+          },
+        } as any}
       />
     </div>
   );

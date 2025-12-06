@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { Share, ArrowLeft, Phone, Eye, Store } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { parseImagePair } from "@/lib/image-utils";
 
 interface Product {
   id: number;
@@ -89,7 +90,9 @@ export default function Product() {
       updateOrCreateMetaTag('property', 'og:url', window.location.href);
       
       // Use first image for preview
-      const previewImage = product.imageUrls?.[0] || product.imageUrl;
+      const firstImage = product.imageUrls?.[0];
+      const parsedFirst = firstImage ? parseImagePair(firstImage) : null;
+      const previewImage = parsedFirst?.thumb || parsedFirst?.full || product.imageUrl;
       if (previewImage) {
         updateOrCreateMetaTag('property', 'og:image', previewImage);
         updateOrCreateMetaTag('property', 'og:image:width', '800');
@@ -207,7 +210,7 @@ export default function Product() {
   }
 
   const images = product.imageUrls && product.imageUrls.length > 0 
-    ? product.imageUrls 
+    ? product.imageUrls
     : product.imageUrl 
       ? [product.imageUrl] 
       : [];
