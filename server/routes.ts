@@ -15,6 +15,8 @@ import fs from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 
+const PUBLIC_DIR = path.resolve(import.meta.dirname, "..", "public");
+
 interface HTMLMetaTags {
   title: string;
   description: string;
@@ -317,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const objectStorageService = new ObjectStorageService();
       const compressedUrls: string[] = [];
-      const localUploadsDir = path.resolve(process.cwd(), "public", "uploads");
+      const localUploadsDir = path.join(PUBLIC_DIR, "uploads");
       fs.mkdirSync(localUploadsDir, { recursive: true });
       const storageConfigured = Boolean(process.env.PUBLIC_OBJECT_SEARCH_PATHS && process.env.PRIVATE_OBJECT_DIR);
 

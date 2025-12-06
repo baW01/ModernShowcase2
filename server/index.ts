@@ -8,11 +8,13 @@ import rateLimit from "express-rate-limit";
 import compression from "compression";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import path from "path";
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
+const PUBLIC_DIR = path.resolve(import.meta.dirname, "..", "public");
 
 // Trust proxy for rate limiting to work correctly
 app.set('trust proxy', 1);
@@ -85,7 +87,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 // Cache static assets for better performance
-app.use(express.static('public', {
+app.use(express.static(PUBLIC_DIR, {
   maxAge: '1y',
   etag: true,
   lastModified: true,
