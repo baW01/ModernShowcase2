@@ -1,7 +1,15 @@
 import crypto from 'crypto';
 
+const APP_ENV = process.env.NODE_ENV || 'production';
+const DEFAULT_HASH_SECRET = 'your-secure-secret-key-change-this';
+
 // Secret key for hashing - should be in environment variable in production
-const HASH_SECRET = process.env.HASH_SECRET || 'your-secure-secret-key-change-this';
+const HASH_SECRET = (() => {
+  if (APP_ENV === 'production' && (!process.env.HASH_SECRET || process.env.HASH_SECRET === DEFAULT_HASH_SECRET)) {
+    throw new Error('[Security] HASH_SECRET must be set in production');
+  }
+  return process.env.HASH_SECRET || DEFAULT_HASH_SECRET;
+})();
 
 /**
  * Generates a secure hash token for a product ID that can be used in delete request links

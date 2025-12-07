@@ -7,14 +7,21 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import compression from "compression";
 import dotenv from "dotenv";
-import jwt from "jsonwebtoken";
 import path from "path";
+import { verifyToken } from "./auth";
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
 const APP_ENV = process.env.NODE_ENV || "production";
+const allowedOrigin = APP_ENV === 'production'
+  ? (process.env.FRONTEND_URL || process.env.PUBLIC_BASE_URL || undefined)
+  : true;
+
+if (APP_ENV === 'production' && !allowedOrigin) {
+  throw new Error('[Security] Set FRONTEND_URL or PUBLIC_BASE_URL in production to lock down CORS');
+}
 app.set("env", APP_ENV);
 const PUBLIC_DIR = path.resolve(import.meta.dirname, "..", "public");
 
@@ -51,10 +58,6 @@ app.use(helmet({
 }));
 
 // CORS configuration
-const allowedOrigin = APP_ENV === 'production'
-  ? (process.env.FRONTEND_URL || process.env.PUBLIC_BASE_URL || true)
-  : true;
-
 app.use(cors({
   origin: allowedOrigin,
   credentials: true,
@@ -71,14 +74,9 @@ const limiter = rateLimit({
     // Skip rate limiting for authenticated admin users
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      try {
-        const token = authHeader.substring(7);
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret') as any;
-        return decoded.isAdmin === true; // Skip rate limiting for admins
-      } catch (error) {
-        // Invalid token, apply rate limiting
-        return false;
-      }
+      const token = authHeader.substring(7);
+      const decoded = verifyToken(token);
+      return decoded?.isAdmin === true; // Skip rate limiting for admins
     }
     return false; // Apply rate limiting for non-authenticated requests
   }
@@ -100,27 +98,11 @@ app.use(express.static(PUBLIC_DIR, {
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
 
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
+      log(`${req.method} ${path} ${res.statusCode} in ${duration}ms`);
     }
   });
 

@@ -131,6 +131,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  const imageUploadLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 30, // Allow bursts but cap abuse
+    message: 'Zbyt wiele przesłań obrazów. Spróbuj ponownie później.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  const statsLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 60,
+    message: 'Zbyt wiele zgłoszeń w krótkim czasie.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
   // Authentication endpoint
   app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
@@ -308,13 +324,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  const isAllowedImage = (dataUrl: string) => {
+    if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) return false;
+    const allowedMime = ['image/jpeg', 'image/png', 'image/webp'];
+    const mime = dataUrl.slice(5, dataUrl.indexOf(';'));
+    return allowedMime.includes(mime);
+  };
+
+  const isWithinSizeLimit = (dataUrl: string, maxBytes: number) => {
+    // base64 size approximation
+    const base64 = dataUrl.split(',')[1] || '';
+    const sizeBytes = (base64.length * 3) / 4;
+    return sizeBytes <= maxBytes;
+  };
+
   // Convert base64 images to compressed URLs
-  app.post("/api/images/compress", async (req, res) => {
+  app.post("/api/images/compress", imageUploadLimiter, async (req, res) => {
     try {
       const { images } = req.body; // Array of base64 images
       
       if (!images || !Array.isArray(images)) {
         return res.status(400).json({ message: "Images array is required" });
+      }
+
+      if (images.length > 10) {
+        return res.status(400).json({ message: "Maksymalnie 10 obrazów w jednym żądaniu" });
       }
 
       const objectStorageService = new ObjectStorageService();
@@ -324,8 +358,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const storageConfigured = Boolean(process.env.PUBLIC_OBJECT_SEARCH_PATHS && process.env.PRIVATE_OBJECT_DIR);
 
       for (const base64Image of images) {
-        if (typeof base64Image !== 'string' || !base64Image.startsWith('data:image/')) {
+        if (!isAllowedImage(base64Image)) {
           continue; // Skip invalid images
+        }
+
+        if (!isWithinSizeLimit(base64Image, 10 * 1024 * 1024)) { // 10MB limit per image
+          console.warn("[Image Compression] Dropping image exceeding size limit");
+          continue;
         }
 
         try {
@@ -487,7 +526,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Image upload endpoint - compress & store single image, returns thumb|full URL pair
-  app.post("/api/upload-image", async (req, res) => {
+  app.post("/api/upload-image", imageUploadLimiter, async (req, res) => {
     try {
       const { imageData } = req.body;
       
@@ -495,8 +534,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No image data provided" });
       }
 
-      if (!imageData.startsWith('data:image/')) {
+      if (!isAllowedImage(imageData)) {
         return res.status(400).json({ message: "Invalid image format" });
+      }
+
+      if (!isWithinSizeLimit(imageData, 10 * 1024 * 1024)) {
+        return res.status(400).json({ message: "Image too large (max 10MB after base64 overhead)" });
       }
 
       const objectStorageService = new ObjectStorageService();
@@ -873,7 +916,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Product statistics endpoints
-  app.post("/api/products/:id/view", async (req, res) => {
+  app.post("/api/products/:id/view", statsLimiter, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const ipAddress = req.ip;
@@ -885,7 +928,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/products/:id/click", async (req, res) => {
+  app.post("/api/products/:id/click", statsLimiter, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const ipAddress = req.ip;
@@ -1087,7 +1130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Track advertisement view - PUBLIC endpoint
-  app.post("/api/advertisements/:id/view", async (req, res) => {
+  app.post("/api/advertisements/:id/view", statsLimiter, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.incrementAdvertisementViews(id);
@@ -1098,7 +1141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Track advertisement click - PUBLIC endpoint
-  app.post("/api/advertisements/:id/click", async (req, res) => {
+  app.post("/api/advertisements/:id/click", statsLimiter, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.incrementAdvertisementClicks(id);

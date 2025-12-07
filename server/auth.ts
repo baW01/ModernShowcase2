@@ -2,9 +2,23 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import type { Request, Response, NextFunction } from 'express';
 
+const APP_ENV = process.env.NODE_ENV || 'production';
+
+// Helpers to ensure secrets are provided in production
+const assertSecret = (value: string | undefined, fallback: string, name: string) => {
+  if (APP_ENV === 'production' && (!value || value === fallback)) {
+    throw new Error(`[Security] ${name} must be provided via environment variable in production`);
+  }
+  return value || fallback;
+};
+
 // Get environment variables with defaults for development
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret-change-in-production';
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2b$10$Mn.pzelumhNZ9YHk7ExuWeuxq89xghA6SNFVzgId2mAXpviDbiUEO'; // Default: "Kopia15341534!"
+const JWT_SECRET = assertSecret(process.env.JWT_SECRET, 'dev-jwt-secret-change-in-production', 'JWT_SECRET');
+const ADMIN_PASSWORD_HASH = assertSecret(
+  process.env.ADMIN_PASSWORD_HASH,
+  '$2b$10$Mn.pzelumhNZ9YHk7ExuWeuxq89xghA6SNFVzgId2mAXpviDbiUEO', // Default: "Kopia15341534!"
+  'ADMIN_PASSWORD_HASH'
+);
 
 interface JWTPayload {
   isAdmin: boolean;
