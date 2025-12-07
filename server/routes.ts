@@ -600,7 +600,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const emailSent = await sendEmail({
             to: originalRequest.submitterEmail,
-            from: process.env.FROM_EMAIL || 'noreply@spotted-gfc.com',
+            from: process.env.FROM_EMAIL || 'noreply@spottedgfc.pl',
             subject: 'Twoja prośba o dodanie produktu została odrzucona',
             html: generateRejectionEmailHtml(originalRequest.title, adminNotes)
           });
@@ -657,7 +657,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const emailSent = await sendEmail({
             to: request.submitterEmail,
-            from: process.env.FROM_EMAIL || 'noreply@spotted-gfc.com',
+            from: process.env.FROM_EMAIL || 'noreply@spottedgfc.pl',
             subject: 'Twój produkt został zatwierdzony! ✅',
             html: generateApprovalEmailHtml(request.title, product.id)
           });
@@ -767,7 +767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         await sendEmail({
           to: validatedEmail,
-          from: process.env.FROM_EMAIL || 'noreply@spotted-gfc.com',
+          from: process.env.FROM_EMAIL || 'noreply@spottedgfc.pl',
           subject: 'Prośba o usunięcie produktu otrzymana 📝',
           html: generateDeleteRequestEmailHtml(product.title, reason)
         });

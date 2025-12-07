@@ -1,59 +1,63 @@
-import sgMail from '@sendgrid/mail';
+import nodemailer from 'nodemailer';
 import { generateDeleteRequestToken } from './hash-utils.js';
 
 const publicBaseUrl = process.env.PUBLIC_BASE_URL || 'http://195.117.36.97';
 
-// Initialize SendGrid
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
+// Create reusable SMTP transporter if env config is present
+const smtpHost = process.env.SMTP_HOST;
+const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
+const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
+const smtpUser = process.env.SMTP_USER;
+const smtpPass = process.env.SMTP_PASS;
+
+const transporter = smtpHost
+  ? nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpSecure,
+      auth: smtpUser && smtpPass ? { user: smtpUser, pass: smtpPass } : undefined
+    })
+  : null;
 
 export interface EmailParams {
   to: string;
-  from: string;
+  from?: string;
   subject: string;
   text?: string;
   html?: string;
 }
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.warn('SENDGRID_API_KEY not found, email not sent');
+  if (!transporter) {
+    console.warn('SMTP configuration missing (SMTP_HOST). Email not sent.');
     return false;
   }
 
-  if (!process.env.FROM_EMAIL) {
-    console.warn('FROM_EMAIL not found, email not sent');
+  const fromAddress = params.from || process.env.FROM_EMAIL || 'noreply@spottedgfc.pl';
+
+  if (!fromAddress) {
+    console.warn('FROM_EMAIL not set and no "from" provided, email not sent');
     return false;
   }
 
-  console.log(`Attempting to send email to: ${params.to} from: ${params.from}`);
+  console.log(`Attempting to send email to: ${params.to} from: ${fromAddress}`);
   console.log(`Subject: ${params.subject}`);
 
   try {
-    const result = await sgMail.send({
+    const result = await transporter.sendMail({
       to: params.to,
-      from: params.from,
+      from: fromAddress,
       subject: params.subject,
       text: params.text ?? '',
-      html: params.html,
-      trackingSettings: {
-        clickTracking: {
-          enable: false,
-          enableText: false
-        },
-        openTracking: {
-          enable: false
-        }
-      }
+      html: params.html
     });
-    console.log(`Email sent successfully to ${params.to}`, result[0].statusCode);
+    console.log(`Email sent successfully to ${params.to}`, result?.response || '');
     return true;
   } catch (error: any) {
-    console.error('SendGrid email error:', {
+    console.error('SMTP email error:', {
       message: error.message,
       code: error.code,
-      response: error.response?.body || 'No response body'
+      response: error.response?.body || error.response || 'No response body'
     });
     return false;
   }
