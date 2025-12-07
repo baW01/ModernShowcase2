@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { withApiBase } from "@/lib/queryClient";
+import { parseImagePair } from "@/lib/image-utils";
 
 interface ImageUploadDropzoneProps {
   value?: string;
@@ -20,8 +21,9 @@ export function ImageUploadDropzone({ value = "", onChange }: ImageUploadDropzon
 
   // Keep local preview/input in sync with external value (form state)
   useEffect(() => {
-    setUrlInput(value || "");
-    setPreviewUrl(value || "");
+    const { thumb, full } = parseImagePair(value || "");
+    setUrlInput(full || thumb || "");
+    setPreviewUrl(thumb || full || "");
   }, [value]);
 
   // Image compression function
@@ -168,7 +170,7 @@ export function ImageUploadDropzone({ value = "", onChange }: ImageUploadDropzon
 
         const result = await response.json();
         const pair = Array.isArray(result?.compressedUrls) ? result.compressedUrls[0] : null;
-        const [thumb, full] = typeof pair === 'string' ? pair.split('|') : [];
+        const { thumb, full } = parseImagePair(typeof pair === "string" ? pair : "");
         const finalUrl = full || thumb || finalDataUrl;
 
         setPreviewUrl(thumb || full || finalDataUrl);
@@ -201,8 +203,9 @@ export function ImageUploadDropzone({ value = "", onChange }: ImageUploadDropzon
   };
 
   const handleUrlChange = (url: string) => {
-    setUrlInput(url);
-    setPreviewUrl(url || "");
+    const { thumb, full } = parseImagePair(url || "");
+    setUrlInput(full || thumb || url);
+    setPreviewUrl(thumb || full || "");
     onChange(url);
   };
 

@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ImageUploadDropzone } from "./image-upload-dropzone";
 import type { Advertisement, InsertAdvertisement } from "@shared/schema";
+import { parseImagePair } from "@/lib/image-utils";
 
 const advertisementFormSchema = z.object({
   title: z.string().min(1, "Tytuł jest wymagany"),
@@ -338,80 +339,85 @@ export function AdvertisementsManagement() {
             </CardContent>
           </Card>
         ) : (
-          advertisements.map((ad) => (
-            <Card key={ad.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <CardTitle className="flex items-center gap-2">
-                      {ad.title}
-                      <Badge variant={ad.isActive ? "default" : "secondary"}>
-                        {ad.isActive ? "Aktywna" : "Nieaktywna"}
-                      </Badge>
-                      <Badge variant="outline">Priorytet: {ad.priority}</Badge>
-                    </CardTitle>
-                    {ad.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{ad.description}</p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingAd(ad)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(ad.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-4">
-                  {ad.imageUrl && (
-                    <div className="flex-shrink-0">
-                      <img
-                        src={ad.imageUrl}
-                        alt={ad.title}
-                        className="w-20 h-20 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
-                        {ad.views} wyświetleń
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MousePointer className="h-4 w-4" />
-                        {ad.clicks} kliknięć
-                      </div>
-                      {ad.targetUrl && (
-                        <div className="flex items-center gap-1">
-                          <ExternalLink className="h-4 w-4" />
-                          <a
-                            href={ad.targetUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            Otwórz link
-                          </a>
-                        </div>
+          advertisements.map((ad) => {
+            const { thumb, full } = parseImagePair(ad.imageUrl || "");
+            const displayImage = thumb || full;
+
+            return (
+              <Card key={ad.id}>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <CardTitle className="flex items-center gap-2">
+                        {ad.title}
+                        <Badge variant={ad.isActive ? "default" : "secondary"}>
+                          {ad.isActive ? "Aktywna" : "Nieaktywna"}
+                        </Badge>
+                        <Badge variant="outline">Priorytet: {ad.priority}</Badge>
+                      </CardTitle>
+                      {ad.description && (
+                        <p className="text-sm text-muted-foreground mt-1">{ad.description}</p>
                       )}
                     </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingAd(ad)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(ad.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-4">
+                    {displayImage && (
+                      <div className="flex-shrink-0">
+                        <img
+                          src={displayImage}
+                          alt={ad.title}
+                          className="w-20 h-20 object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Eye className="h-4 w-4" />
+                          {ad.views} wyświetleń
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MousePointer className="h-4 w-4" />
+                          {ad.clicks} kliknięć
+                        </div>
+                        {ad.targetUrl && (
+                          <div className="flex items-center gap-1">
+                            <ExternalLink className="h-4 w-4" />
+                            <a
+                              href={ad.targetUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              Otwórz link
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
         )}
       </div>
 
