@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,179 @@ const advertisementFormSchema = z.object({
 
 type AdvertisementFormData = z.infer<typeof advertisementFormSchema>;
 
+type AdvertisementFormProps = {
+  advertisement?: Advertisement;
+  onClose: () => void;
+  onCreate: (data: InsertAdvertisement) => void;
+  onUpdate: (id: number, data: InsertAdvertisement) => void;
+  isSaving: boolean;
+};
+
+function AdvertisementForm({ advertisement, onClose, onCreate, onUpdate, isSaving }: AdvertisementFormProps) {
+  const form = useForm<AdvertisementFormData>({
+    resolver: zodResolver(advertisementFormSchema),
+    defaultValues: {
+      title: advertisement?.title || "",
+      description: advertisement?.description || "",
+      imageUrl: advertisement?.imageUrl || "",
+      targetUrl: advertisement?.targetUrl || "",
+      isActive: advertisement?.isActive ?? true,
+      priority: advertisement?.priority || 1
+    },
+    shouldUnregister: false
+  });
+
+  // Reset form values when switching between edit/create to avoid stale data
+  useEffect(() => {
+    form.reset({
+      title: advertisement?.title || "",
+      description: advertisement?.description || "",
+      imageUrl: advertisement?.imageUrl || "",
+      targetUrl: advertisement?.targetUrl || "",
+      isActive: advertisement?.isActive ?? true,
+      priority: advertisement?.priority || 1
+    });
+  }, [advertisement, form]);
+
+  const onSubmit = (data: AdvertisementFormData) => {
+    const submitData: InsertAdvertisement = {
+      title: data.title,
+      description: data.description || null,
+      imageUrl: data.imageUrl || null,
+      targetUrl: data.targetUrl || null,
+      isActive: data.isActive,
+      priority: data.priority
+    };
+
+    if (advertisement) {
+      onUpdate(advertisement.id, submitData);
+    } else {
+      onCreate(submitData);
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tytuł reklamy</FormLabel>
+              <FormControl>
+                <Input placeholder="Np. Promocja 50% zniżki" {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Opis (opcjonalny)</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Opisz reklamę..." 
+                  rows={3}
+                  {...field}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="imageUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Zdjęcie reklamy</FormLabel>
+              <FormControl>
+                <ImageUploadDropzone
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="targetUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Link docelowy (opcjonalny)</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="https://example.com" 
+                  type="url"
+                  {...field}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="priority"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Priorytet (1-10)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min="1" 
+                    max="10"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <FormControl>
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                    <Label>{field.value ? "Aktywna" : "Nieaktywna"}</Label>
+                  </div>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Anuluj
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={isSaving}
+          >
+            {advertisement ? "Zaktualizuj" : "Utwórz"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+
 export function AdvertisementsManagement() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingAd, setEditingAd] = useState<Advertisement | null>(null);
@@ -37,7 +210,7 @@ export function AdvertisementsManagement() {
   const { data: advertisements = [], isLoading } = useQuery<Advertisement[]>({
     queryKey: ["/api/advertisements"],
     staleTime: 0, // Always refetch when cache is invalidated
-    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchOnWindowFocus: false, // avoid dialog reset when focus returns (file picker)
   });
 
   // Create advertisement mutation
@@ -128,158 +301,6 @@ export function AdvertisementsManagement() {
     }
   };
 
-  function AdvertisementForm({ advertisement, onClose }: { advertisement?: Advertisement; onClose: () => void }) {
-    const form = useForm<AdvertisementFormData>({
-      resolver: zodResolver(advertisementFormSchema),
-      defaultValues: {
-        title: advertisement?.title || "",
-        description: advertisement?.description || "",
-        imageUrl: advertisement?.imageUrl || "",
-        targetUrl: advertisement?.targetUrl || "",
-        isActive: advertisement?.isActive ?? true,
-        priority: advertisement?.priority || 1
-      }
-    });
-
-    const onSubmit = (data: AdvertisementFormData) => {
-      const submitData: InsertAdvertisement = {
-        title: data.title,
-        description: data.description || null,
-        imageUrl: data.imageUrl || null,
-        targetUrl: data.targetUrl || null,
-        isActive: data.isActive,
-        priority: data.priority
-      };
-
-      if (advertisement) {
-        updateAdMutation.mutate({ id: advertisement.id, data: submitData });
-      } else {
-        createAdMutation.mutate(submitData);
-      }
-    };
-
-    return (
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tytuł reklamy</FormLabel>
-                <FormControl>
-                  <Input placeholder="Np. Promocja 50% zniżki" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Opis (opcjonalny)</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Opisz reklamę..." 
-                    rows={3}
-                    {...field}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="imageUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Zdjęcie reklamy</FormLabel>
-                <FormControl>
-                  <ImageUploadDropzone
-                    onImageUpload={(url) => field.onChange(url)}
-                    currentImageUrl={field.value}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="targetUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Link docelowy (opcjonalny)</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="https://example.com" 
-                    type="url"
-                    {...field}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priorytet (1-10)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      min="1" 
-                      max="10"
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="isActive"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center space-x-2 pt-2">
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <Label>{field.value ? "Aktywna" : "Nieaktywna"}</Label>
-                    </div>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Anuluj
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={createAdMutation.isPending || updateAdMutation.isPending}
-            >
-              {advertisement ? "Zaktualizuj" : "Utwórz"}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    );
-  }
-
   if (isLoading) {
     return <div className="p-6">Ładowanie reklam...</div>;
   }
@@ -299,7 +320,12 @@ export function AdvertisementsManagement() {
             <DialogHeader>
               <DialogTitle>Nowa reklama</DialogTitle>
             </DialogHeader>
-            <AdvertisementForm onClose={() => setIsAddOpen(false)} />
+            <AdvertisementForm 
+              onClose={() => setIsAddOpen(false)} 
+              onCreate={(data) => createAdMutation.mutate(data)}
+              onUpdate={(id, data) => updateAdMutation.mutate({ id, data })}
+              isSaving={createAdMutation.isPending || updateAdMutation.isPending}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -399,6 +425,9 @@ export function AdvertisementsManagement() {
             <AdvertisementForm 
               advertisement={editingAd} 
               onClose={() => setEditingAd(null)} 
+              onCreate={(data) => createAdMutation.mutate(data)}
+              onUpdate={(id, data) => updateAdMutation.mutate({ id, data })}
+              isSaving={createAdMutation.isPending || updateAdMutation.isPending}
             />
           )}
         </DialogContent>

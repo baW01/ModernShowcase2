@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import { generateDeleteRequestToken } from './hash-utils.js';
 
 const publicBaseUrl = process.env.PUBLIC_BASE_URL || 'http://195.117.36.97';
+const defaultFromAddress = process.env.FROM_EMAIL || 'noreply@spottedgfc.pl';
 
 // Create reusable SMTP transporter if env config is present
 const smtpHost = process.env.SMTP_HOST;
@@ -9,15 +10,35 @@ const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 5
 const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
+const sendgridApiKey = process.env.SENDGRID_API_KEY;
+const smtpTlsRejectUnauthorized = process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false';
+const smtpTlsServername = process.env.SMTP_TLS_SERVERNAME || smtpHost;
 
-const transporter = smtpHost
-  ? nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpSecure,
-      auth: smtpUser && smtpPass ? { user: smtpUser, pass: smtpPass } : undefined
-    })
-  : null;
+let transporter: nodemailer.Transporter | null = null;
+
+if (smtpHost) {
+  transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpSecure,
+    auth: smtpUser && smtpPass ? { user: smtpUser, pass: smtpPass } : undefined,
+    tls: {
+      rejectUnauthorized: smtpTlsRejectUnauthorized,
+      servername: smtpTlsServername || undefined
+    }
+  });
+} else if (sendgridApiKey) {
+  // Backwards-compatibility: use SendGrid over SMTP if API key is provided
+  transporter = nodemailer.createTransport({
+    host: 'smtp.sendgrid.net',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'apikey',
+      pass: sendgridApiKey
+    }
+  });
+}
 
 export interface EmailParams {
   to: string;
@@ -29,11 +50,11 @@ export interface EmailParams {
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
   if (!transporter) {
-    console.warn('SMTP configuration missing (SMTP_HOST). Email not sent.');
+    console.warn('SMTP configuration missing (SMTP_HOST or SENDGRID_API_KEY). Email not sent.');
     return false;
   }
 
-  const fromAddress = params.from || process.env.FROM_EMAIL || 'noreply@spottedgfc.pl';
+  const fromAddress = params.from || defaultFromAddress;
 
   if (!fromAddress) {
     console.warn('FROM_EMAIL not set and no "from" provided, email not sent');

@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { Advertisement } from "@shared/schema";
 import noImagePlaceholder from "@/assets/no-image-placeholder.svg";
+import { parseImagePair } from "@/lib/image-utils";
 
 interface AdvertisementCardProps {
   advertisement: Advertisement;
@@ -13,6 +15,8 @@ interface AdvertisementCardProps {
 export function AdvertisementCard({ advertisement }: AdvertisementCardProps) {
   const [viewTracked, setViewTracked] = useState(false);
   const viewStorageKey = `ad_view_${advertisement.id}`;
+  const { thumb, full } = parseImagePair(advertisement.imageUrl || "");
+  const displayImage = thumb || full || noImagePlaceholder;
 
   // Track view when component mounts (once per 6h via localStorage)
   useEffect(() => {
@@ -70,46 +74,42 @@ export function AdvertisementCard({ advertisement }: AdvertisementCardProps) {
   };
 
   return (
-    <Card 
-      className={`bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-dashed border-blue-200 transition-all duration-200 ${
-        advertisement.targetUrl ? 'hover:shadow-md cursor-pointer hover:border-blue-300' : ''
-      }`}
-      onClick={advertisement.targetUrl ? handleClick : undefined}
-    >
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
-            REKLAMA
-          </Badge>
+    <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden relative">
+      <div className="relative aspect-square bg-gray-50">
+        <img
+          src={displayImage}
+          alt={advertisement.title}
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          onError={(e) => {
+            e.currentTarget.src = noImagePlaceholder;
+          }}
+        />
+        <div className="absolute top-2 left-2 flex gap-1">
+          <Badge className="bg-amber-500 text-white">Reklama</Badge>
           {advertisement.targetUrl && (
-            <ExternalLink className="h-4 w-4 text-blue-600" />
+            <Badge variant="secondary" className="bg-white/80 text-blue-700 border-blue-200">
+              Sponsor
+            </Badge>
           )}
         </div>
-        
-        <div className="flex gap-3">
-          {advertisement.imageUrl && (
-            <div className="flex-shrink-0">
-              <img
-                src={advertisement.imageUrl}
-                alt={advertisement.title}
-                className="w-16 h-16 object-cover rounded-lg"
-                onError={(e) => {
-                  e.currentTarget.src = noImagePlaceholder;
-                }}
-              />
-            </div>
+      </div>
+      <div className="p-3 sm:p-4 flex flex-col gap-3">
+        <h3 className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2">
+          {advertisement.title}
+        </h3>
+        {advertisement.description && (
+          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
+            {advertisement.description}
+          </p>
+        )}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-500">Wspierane ogłoszenie</span>
+          {advertisement.targetUrl && (
+            <Button variant="outline" size="sm" onClick={handleClick} className="gap-2">
+              Zobacz ofertę
+              <ExternalLink className="h-4 w-4" />
+            </Button>
           )}
-          
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm text-gray-900 mb-1">
-              {advertisement.title}
-            </h3>
-            {advertisement.description && (
-              <p className="text-xs text-gray-600 line-clamp-2">
-                {advertisement.description}
-              </p>
-            )}
-          </div>
         </div>
       </div>
     </Card>

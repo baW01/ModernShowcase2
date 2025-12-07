@@ -486,7 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image upload endpoint - PUBLIC endpoint for immediate image processing
+  // Image upload endpoint - compress & store single image, returns thumb|full URL pair
   app.post("/api/upload-image", async (req, res) => {
     try {
       const { imageData } = req.body;
@@ -495,19 +495,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No image data provided" });
       }
 
-      // Validate that it's a valid base64 data URL
       if (!imageData.startsWith('data:image/')) {
         return res.status(400).json({ message: "Invalid image format" });
       }
 
-      // For now, we just return the same data URL
-      // In a real application, you might want to:
-      // 1. Save to cloud storage (AWS S3, Cloudinary, etc.)
-      // 2. Optimize the image further
-      // 3. Generate different sizes/thumbnails
-      
+      const objectStorageService = new ObjectStorageService();
+      const storageConfigured = Boolean(process.env.PUBLIC_OBJECT_SEARCH_PATHS && process.env.PRIVATE_OBJECT_DIR);
+      const uploadsDir = path.join(PUBLIC_DIR, "uploads");
+      fs.mkdirSync(uploadsDir, { recursive: true });
+
+      // Convert and compress
+      const buffer = base64ToBuffer(imageData);
+      const thumbBuffer = await compressImageBuffer(buffer, 800, 75);
+      const fullBuffer = await compressImageBuffer(buffer, 1600, 85);
+      const id = randomUUID();
+      const thumbName = `thumb_${id}.jpg`;
+      const fullName = `full_${id}.jpg`;
+
+      let thumbUrl = `/uploads/${thumbName}`;
+      let fullUrl = `/uploads/${fullName}`;
+
+      // Save locally as fallback
+      await fs.promises.writeFile(path.join(uploadsDir, thumbName), thumbBuffer);
+      await fs.promises.writeFile(path.join(uploadsDir, fullName), fullBuffer);
+
+      // Prefer object storage if configured
+      if (storageConfigured) {
+        try {
+          const storedThumb = await objectStorageService.storeCompressedImage(thumbBuffer, thumbName);
+          const storedFull = await objectStorageService.storeCompressedImage(fullBuffer, fullName);
+          thumbUrl = storedThumb;
+          fullUrl = storedFull;
+        } catch (storageErr) {
+          console.warn("[Image Upload] Object storage upload failed, using local URLs", storageErr);
+        }
+      }
+
       res.json({ 
-        imageUrl: imageData,
+        imageUrl: `${thumbUrl}|${fullUrl}`,
+        thumbUrl,
+        fullUrl,
         message: "Image uploaded successfully"
       });
     } catch (error) {

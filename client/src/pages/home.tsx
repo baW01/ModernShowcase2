@@ -263,9 +263,7 @@ export default function Home() {
                   // Check if item is an advertisement by checking if it has 'priority' property
                   if ('priority' in item) {
                     return (
-                      <div key={`ad-${item.id}`} className="col-span-2 lg:col-span-3 xl:col-span-4">
-                        <AdvertisementCard advertisement={item as Advertisement} />
-                      </div>
+                      <AdvertisementCard key={`ad-${item.id}`} advertisement={item as Advertisement} />
                     );
                   } else {
                     return (

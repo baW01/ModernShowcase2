@@ -1,22 +1,28 @@
-import { useState, useRef } from "react";
-import { CloudUpload, X, Image as ImageIcon, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { CloudUpload, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { withApiBase } from "@/lib/queryClient";
 
 interface ImageUploadDropzoneProps {
-  onImageUpload: (url: string) => void;
-  currentImageUrl?: string;
+  value?: string;
+  onChange: (url: string) => void;
 }
 
-export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUploadDropzoneProps) {
+export function ImageUploadDropzone({ value = "", onChange }: ImageUploadDropzoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
-  const [imageUrl, setImageUrl] = useState(currentImageUrl || "");
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(currentImageUrl || "");
+  const [urlInput, setUrlInput] = useState(value || "");
+  const [previewUrl, setPreviewUrl] = useState(value || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Keep local preview/input in sync with external value (form state)
+  useEffect(() => {
+    setUrlInput(value || "");
+    setPreviewUrl(value || "");
+  }, [value]);
 
   // Image compression function
   const compressImage = (file: File, maxSizeInMB: number = 5): Promise<string> => {
@@ -148,12 +154,12 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
       
       // Upload to server immediately
       try {
-        const response = await fetch(withApiBase('/api/upload-image'), {
+        const response = await fetch(withApiBase('/api/images/compress'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ imageData: finalDataUrl }),
+          body: JSON.stringify({ images: [finalDataUrl] }),
         });
 
         if (!response.ok) {
@@ -161,13 +167,19 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
         }
 
         const result = await response.json();
-        setPreviewUrl(result.imageUrl);
-        onImageUpload(result.imageUrl);
+        const pair = Array.isArray(result?.compressedUrls) ? result.compressedUrls[0] : null;
+        const [thumb, full] = typeof pair === 'string' ? pair.split('|') : [];
+        const finalUrl = full || thumb || finalDataUrl;
+
+        setPreviewUrl(thumb || full || finalDataUrl);
+        setUrlInput(finalUrl);
+        onChange(pair || finalUrl);
       } catch (uploadError) {
         console.error('Error uploading image:', uploadError);
         // Fallback to local base64 if upload fails
         setPreviewUrl(finalDataUrl);
-        onImageUpload(finalDataUrl);
+        setUrlInput(finalDataUrl);
+        onChange(finalDataUrl);
         
         toast({
           title: "Ostrzeżenie",
@@ -189,17 +201,15 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
   };
 
   const handleUrlChange = (url: string) => {
-    setImageUrl(url);
-    if (url) {
-      setPreviewUrl(url);
-      onImageUpload(url);
-    }
+    setUrlInput(url);
+    setPreviewUrl(url || "");
+    onChange(url);
   };
 
   const removeImage = () => {
     setPreviewUrl("");
-    setImageUrl("");
-    onImageUpload("");
+    setUrlInput("");
+    onChange("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -219,7 +229,7 @@ export function ImageUploadDropzone({ onImageUpload, currentImageUrl }: ImageUpl
         <Input
           type="url"
           placeholder="https://example.com/image.jpg"
-          value={imageUrl}
+          value={urlInput}
           onChange={(e) => handleUrlChange(e.target.value)}
         />
       </div>
