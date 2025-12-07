@@ -14,6 +14,8 @@ import path from "path";
 dotenv.config();
 
 const app = express();
+const APP_ENV = process.env.NODE_ENV || "production";
+app.set("env", APP_ENV);
 const PUBLIC_DIR = path.resolve(import.meta.dirname, "..", "public");
 
 // Trust proxy for rate limiting to work correctly
@@ -34,6 +36,8 @@ app.use(compression({
 
 // Security middleware
 app.use(helmet({
+  // Allow resources (images/api) to be fetched even if host/header differs (IP vs domain)
+  crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
@@ -47,8 +51,8 @@ app.use(helmet({
 }));
 
 // CORS configuration
-const allowedOrigin = process.env.NODE_ENV === 'production'
-  ? (process.env.FRONTEND_URL || process.env.PUBLIC_BASE_URL || 'http://195.117.36.97')
+const allowedOrigin = APP_ENV === 'production'
+  ? (process.env.FRONTEND_URL || process.env.PUBLIC_BASE_URL || true)
   : true;
 
 app.use(cors({
