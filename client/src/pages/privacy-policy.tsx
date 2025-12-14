@@ -39,8 +39,8 @@ export default function PrivacyPolicy() {
             <h3 className="text-xl font-medium mb-3">2.2 Dane automatycznie gromadzone</h3>
             <ul className="list-disc pl-6 mb-4">
               <li>Adres IP</li>
-              <li>Informacje o przeglądarce (User Agent)</li>
-              <li>Statystyki wyświetleń i kliknięć produktów</li>
+              <li>Informacje o przeglądarce (User Agent) zapisywane w logach bezpieczeństwa i limitowania ruchu</li>
+              <li>Statystyki wyświetleń i kliknięć produktów oraz reklam</li>
               <li>Dane przechowywane lokalnie w przeglądarce (localStorage)</li>
             </ul>
           </section>
@@ -70,6 +70,7 @@ export default function PrivacyPolicy() {
               <li>Kontaktu w sprawie Twoich ogłoszeń</li>
               <li>Wysyłania powiadomień o statusie ogłoszeń</li>
               <li>Zapewnienia bezpieczeństwa platformy (przeciwdziałanie spamowi)</li>
+              <li>Ochrony przed nadużyciami (rate limiting, analiza ruchu pod kątem ataków)</li>
               <li>Analizy statystyk użytkowania platformy</li>
               <li>Ułatwienia korzystania z platformy poprzez autouzupełnianie</li>
             </ul>
@@ -89,6 +90,8 @@ export default function PrivacyPolicy() {
             <p>
               Twoje dane osobowe nie są sprzedawane ani udostępniane podmiotom trzecim, 
               z wyjątkiem przypadków wymaganych prawem lub niezbędnych do działania platformy.
+              Pliki graficzne przesyłane w ogłoszeniach są przechowywane w publicznie dostępnym katalogu/obiekcie storage,
+              co oznacza, że link do pliku może zostać udostępniony każdemu, kto go posiada.
             </p>
           </section>
 
@@ -97,6 +100,8 @@ export default function PrivacyPolicy() {
             <p>
               Stosujemy odpowiednie środki techniczne i organizacyjne w celu ochrony 
               Twoich danych osobowych przed nieautoryzowanym dostępem, utratą lub zniszczeniem.
+              Obejmuje to m.in. limity liczby żądań (rate limiting), weryfikację formatów przesyłanych plików
+              oraz ograniczenie rozmiaru przesyłanych obrazów.
             </p>
           </section>
 
@@ -130,7 +135,8 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-semibold mb-4">10. Okres przechowywania danych</h2>
             <ul className="list-disc pl-6 mb-4">
               <li>Dane kontaktowe: do momentu usunięcia ogłoszenia lub na Twoje żądanie</li>
-              <li>Statystyki: dane anonimowe przechowywane bezterminowo</li>
+              <li>Statystyki i logi bezpieczeństwa (IP, User Agent): przechowywane zgodnie z uzasadnionym interesem
+                administratora przez okres niezbędny do ochrony przed nadużyciami</li>
               <li>Dane autouzupełniania: do momentu ręcznego usunięcia przez użytkownika</li>
             </ul>
           </section>

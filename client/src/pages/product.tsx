@@ -69,7 +69,7 @@ export default function Product() {
   useEffect(() => {
     if (product) {
       // Update page title
-      document.title = `${product.title} - ${product.category} | ${settings?.storeName || 'Spotted GFC'}`;
+      document.title = `${product.title} - ${product.category} | ${settings?.storeName || 'SpottedGFC - Lokalna platforma sprzedażowa Gryfice'}`;
       
       // Update meta description
       const metaDescription = document.querySelector('meta[name="description"]');

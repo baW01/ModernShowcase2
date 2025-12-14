@@ -83,6 +83,7 @@ export default function TermsOfService() {
               <li>Maksymalnie 3 ogłoszenia na 10 minut z jednego adresu IP</li>
               <li>Maksymalnie 2 prośby o dodanie produktu na 5 minut z jednego adresu IP</li>
               <li>Maksymalnie 5 prób logowania na 15 minut z jednego adresu IP</li>
+              <li>Ograniczenia dotyczące wyświetleń/kliknięć oraz przesyłania obrazów (rate limiting) w celu ochrony przed nadużyciami</li>
             </ul>
           </section>
 
@@ -111,6 +112,8 @@ export default function TermsOfService() {
               <li>Użytkownik ponosi pełną odpowiedzialność za publikowane treści</li>
               <li>Użytkownik zobowiązuje się do zgodnego z prawem korzystania z platformy</li>
               <li>Użytkownik odpowiada za prawdziwość podawanych informacji</li>
+              <li>Użytkownik odpowiada za posiadanie praw do przesyłanych obrazów oraz przyjmuje do wiadomości,
+                że przesłane pliki są przechowywane w publicznie dostępnym katalogu (link może być widoczny dla każdego, kto go posiada)</li>
             </ul>
 
             <h3 className="text-xl font-medium mb-3">8.2 Odpowiedzialność administratora</h3>
