@@ -29,10 +29,15 @@ interface HTMLMetaTags {
 }
 
 function generateHTML(meta: HTMLMetaTags): string {
-  // Read the base HTML template
+  // Prefer the built client HTML in production; fall back to the dev template if needed
+  const projectRoot = process.cwd();
+  const builtIndexPath = join(projectRoot, 'dist', 'public', 'index.html');
+  const devIndexPath = join(projectRoot, 'client', 'index.html');
+
   let html: string;
   try {
-    html = readFileSync(join(process.cwd(), 'client/index.html'), 'utf-8');
+    const templatePath = fs.existsSync(builtIndexPath) ? builtIndexPath : devIndexPath;
+    html = readFileSync(templatePath, 'utf-8');
   } catch (error) {
     // Fallback HTML if file reading fails
     html = `<!DOCTYPE html>
